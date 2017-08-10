@@ -1,0 +1,24 @@
+package com.gotech.vrplayer.module.home;
+
+import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.chad.library.adapter.base.BaseViewHolder;
+import com.gotech.vrplayer.R;
+import com.gotech.vrplayer.model.bean.HomeCategoryBean;
+
+/**
+ * 作者：Created by ZouHaiping on 2017/6/7
+ * 邮箱：haiping.zou@gotechcn.cn
+ * 公司：MKTech
+ */
+public class HomeCategoryAdapter extends BaseQuickAdapter<HomeCategoryBean, BaseViewHolder> {
+
+    public HomeCategoryAdapter() {
+        super(R.layout.adapter_home_category_item);
+    }
+
+    @Override
+    protected void convert(BaseViewHolder helper, HomeCategoryBean item) {
+        helper.setText(R.id.text_view_text, item.getType());
+        helper.setImageResource(R.id.image_view_icon, item.getImageId());
+    }
+}

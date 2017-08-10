@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="video_channel_title">
+        <item>视频</item>
+        <item>热点</item>
+        <item>社会</item>
+        <item>娱乐</item>
+        <item>科技</item>
+        <item>汽车</item>
+        <item>体育</item>
+        <item>财经</item>
+        <item>军事</item>
+        <item>国际</item>
+        <item>时尚</item>
+        <item>游戏</item>
+        <item>旅游</item>
+    </string-array>
+
+    <string-array name="video_channel_code">
+        <item>fragment0</item>
+        <item>fragment1</item>
+        <item>fragment2</item>
+        <item>fragment3</item>
+        <item>fragment4</item>
+        <item>fragment5</item>
+        <item>fragment6</item>
+        <item>fragment7</item>
+        <item>fragment8</item>
+        <item>fragment9</item>
+        <item>fragment10</item>
+        <item>fragment11</item>
+        <item>fragment12</item>
+    </string-array>
+
+    <string-array name="local_video_title">
+        <item>下载中</item>
+        <item>已下载</item>
+        <item>本地视频</item>
+    </string-array>
+</resources>
