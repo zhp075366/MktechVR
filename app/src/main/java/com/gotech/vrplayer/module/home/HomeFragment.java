@@ -33,7 +33,7 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeContract.View {
+public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeView {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -80,6 +80,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeCo
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mPresenter.destroyPresenter();
     }
 
     @Override

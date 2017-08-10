@@ -30,7 +30,8 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter> implements IVideoDetailContract.View, BaseQuickAdapter.RequestLoadMoreListener {
+public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter>
+        implements IVideoDetailView, BaseQuickAdapter.RequestLoadMoreListener {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -51,6 +52,7 @@ public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter> impl
 
     @Override
     protected void onDestroy() {
+        mPresenter.destroyPresenter();
         super.onDestroy();
     }
 
@@ -94,7 +96,6 @@ public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter> impl
             mAdapter.loadMoreEnd();
             return;
         }
-
         mAdapter.addData(data);
         nPage++;
     }

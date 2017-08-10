@@ -18,7 +18,7 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class PersonalFragment extends BaseFragment<PersonalPresenter> implements IPersonalContract.View {
+public class PersonalFragment extends BaseFragment<PersonalPresenter> implements IPersonalView {
 
     @BindView(R.id.text_view_text)
     TextView mTextView;

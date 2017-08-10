@@ -18,9 +18,8 @@ import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseActivity;
 import com.gotech.vrplayer.module.home.HomeFragment;
 import com.gotech.vrplayer.module.localvideo.LocalFragment;
-import com.gotech.vrplayer.module.personal.PersonalFragment;
 import com.gotech.vrplayer.module.netvideo.VideoFragment;
-import com.gotech.vrplayer.utils.Constants;
+import com.gotech.vrplayer.module.personal.PersonalFragment;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.VrActionBar;
 import com.socks.library.KLog;
@@ -38,7 +37,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  * Desc:
  */
 public class MainActivity extends BaseActivity<MainPresenter> implements
-        BottomNavigationBar.OnTabSelectedListener, IMainContract.View,
+        BottomNavigationBar.OnTabSelectedListener, IMainView,
         EasyPermissions.PermissionCallbacks, View.OnClickListener {
 
     @BindView(R.id.bottom_navigation_bar)
@@ -66,8 +65,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements
         initNavigationBar();
         requestPermissions();
         mVrActionBar.setOnRightButtonClickListner(this);
-
-        Handler handler = new Handler();
     }
 
     @Override

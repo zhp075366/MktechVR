@@ -1,33 +1,20 @@
 package com.gotech.vrplayer.module.main;
 
-import com.socks.library.KLog;
-
 /**
  * Author: ZouHaiping on 2017/6/19
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class MainPresenter implements IMainContract.Presenter {
+public class MainPresenter {
 
     private MainActivity mActivity;
-    private IMainContract.View mView;
+    private IMainView mView;
 
-    public MainPresenter(MainActivity activity, IMainContract.View view) {
+    public MainPresenter(MainActivity activity, IMainView view) {
         mView = view;
         mActivity = activity;
     }
 
-    @Override
-    public void startPresenter() {
-
-    }
-
-    @Override
-    public void destroyPresenter() {
-
-    }
-
-    @Override
     public void checkUpdate() {
 
     }

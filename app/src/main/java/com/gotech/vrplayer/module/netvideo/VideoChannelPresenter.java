@@ -16,26 +16,21 @@ import org.greenrobot.eventbus.ThreadMode;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoChannelPresenter implements IVideoChannelContract.Presenter {
+public class VideoChannelPresenter {
 
     private Context mContext;
     private IVideoChannelModel mModel;
-    private IVideoChannelContract.View mView;
+    private IVideoChannelView mView;
     private String mEventCode;
 
-    public VideoChannelPresenter(Context context, IVideoChannelContract.View view) {
+    public VideoChannelPresenter(Context context, IVideoChannelView view) {
         mView = view;
         mContext = context;
         mModel = new VideoChannelModelImpl();
-    }
-
-    @Override
-    public void startPresenter() {
         mEventCode = mView.getChannelCode();
         EventBus.getDefault().register(this);
     }
 
-    @Override
     public void destroyPresenter() {
         EventBus.getDefault().unregister(this);
     }
@@ -55,7 +50,6 @@ public class VideoChannelPresenter implements IVideoChannelContract.Presenter {
     }
 
     // 异步加载
-    @Override
     public void loadMore() {
         boolean hasNetWork = NetworkUtil.checkNetworkConnection(mContext);
         if (!hasNetWork) {
@@ -67,7 +61,6 @@ public class VideoChannelPresenter implements IVideoChannelContract.Presenter {
     }
 
     // 异步加载
-    @Override
     public void getFirstLoadData() {
         mView.showLoading();
         mModel.getFirstLoadData(mEventCode);

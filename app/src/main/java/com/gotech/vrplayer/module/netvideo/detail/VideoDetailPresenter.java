@@ -17,28 +17,23 @@ import org.greenrobot.eventbus.ThreadMode;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoDetailPresenter implements IVideoDetailContract.Presenter {
+public class VideoDetailPresenter {
 
     private String mEventCode;
     private Context mContext;
     private IVideoDetailModel mModel;
-    private IVideoDetailContract.View mView;
+    private IVideoDetailView mView;
     private DownloadVideoManager mDownloadVideoManager;
 
-    public VideoDetailPresenter(Context context, IVideoDetailContract.View view) {
+    public VideoDetailPresenter(Context context, IVideoDetailView view) {
         mView = view;
         mContext = context;
         mModel = new VideoDetailModelImpl();
         mDownloadVideoManager = DownloadVideoManager.getInstance();
-    }
-
-    @Override
-    public void startPresenter() {
         mEventCode = LoadingDataEvent.VIDEO_DETAIL_EVENT_CODE;
         EventBus.getDefault().register(this);
     }
 
-    @Override
     public void destroyPresenter() {
         EventBus.getDefault().unregister(this);
     }
@@ -57,7 +52,6 @@ public class VideoDetailPresenter implements IVideoDetailContract.Presenter {
         }
     }
 
-    @Override
     public void loadMore() {
         boolean hasNetWork = NetworkUtil.checkNetworkConnection(mContext);
         if (!hasNetWork) {
@@ -68,13 +62,11 @@ public class VideoDetailPresenter implements IVideoDetailContract.Presenter {
         mModel.loadMore(page);
     }
 
-    @Override
     public void getFirstLoadData() {
         mView.showLoading();
         mModel.getFirstLoadData();
     }
 
-    @Override
     public AddTaskResult addTask() {
         return mDownloadVideoManager.addOneTask();
     }

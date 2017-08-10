@@ -21,24 +21,19 @@ import java.util.List;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class HomePresenter implements IHomeContract.Presenter {
+public class HomePresenter {
 
     private Context mContext;
     private IHomeModel mModel;
-    private IHomeContract.View mView;
+    private IHomeView mView;
 
-    public HomePresenter(Context context, IHomeContract.View view) {
+    public HomePresenter(Context context, IHomeView view) {
         mView = view;
         mContext = context;
         mModel = new HomeModelImpl();
-    }
-
-    @Override
-    public void startPresenter() {
         EventBus.getDefault().register(this);
     }
 
-    @Override
     public void destroyPresenter() {
         EventBus.getDefault().unregister(this);
     }
@@ -53,26 +48,22 @@ public class HomePresenter implements IHomeContract.Presenter {
     }
 
     // 异步请求网络数据
-    @Override
     public void getFirstLoadData() {
         mView.showLoading();
         mModel.getFirstLoadData();
     }
 
     // 测试用的同步接口
-    @Override
     public List<HomeCategoryBean> getCategoryData() {
         return mModel.getCategoryData();
     }
 
     // 测试用的同步接口
-    @Override
     public List<HomeAdBean> getViewPagerData() {
         return mModel.getViewPagerData();
     }
 
     // 请求换一换的数据，同步接口，实际情况：第一次加载就已加载了所有后续需要换一换的数据
-    @Override
     public List<HomeMultipleItemBean> getReplaceRecommendData() {
         // 根据RecommendID去获取对应的推荐数据
         int id = mView.getRecommendID();

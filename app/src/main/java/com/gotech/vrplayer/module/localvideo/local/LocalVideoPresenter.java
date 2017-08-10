@@ -7,23 +7,13 @@ import android.content.Context;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class LocalVideoPresenter implements ILocalVideoContract.Presenter {
+public class LocalVideoPresenter {
 
     private Context mContext;
-    private ILocalVideoContract.View mView;
+    private ILocalVideoView mView;
 
-    public LocalVideoPresenter(Context context, ILocalVideoContract.View view) {
+    public LocalVideoPresenter(Context context, ILocalVideoView view) {
         mContext = context;
         mView = view;
-    }
-
-    @Override
-    public void startPresenter() {
-
-    }
-
-    @Override
-    public void destroyPresenter() {
-
     }
 }

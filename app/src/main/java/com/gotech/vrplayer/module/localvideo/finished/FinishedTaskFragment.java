@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
@@ -25,10 +26,12 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> implements IFinishedTaskContract.View {
+public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> implements IFinishedTaskView {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
+    @BindView(R.id.loading_progress)
+    ProgressBar mLoadingProgress;
 
     private Context mContext;
     private FinishedTaskAdapter mAdapter;
@@ -72,12 +75,12 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
 
     @Override
     public void showLoading() {
-
+        mLoadingProgress.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideLoading() {
-
+        mLoadingProgress.setVisibility(View.GONE);
     }
 
     @Override

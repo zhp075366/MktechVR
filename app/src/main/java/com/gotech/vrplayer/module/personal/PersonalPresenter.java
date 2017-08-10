@@ -7,19 +7,9 @@ import android.content.Context;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class PersonalPresenter implements IPersonalContract.Presenter {
+public class PersonalPresenter {
 
-    public PersonalPresenter(Context context, IPersonalContract.View view) {
-
-    }
-
-    @Override
-    public void startPresenter() {
-
-    }
-
-    @Override
-    public void destroyPresenter() {
+    public PersonalPresenter(Context context, IPersonalView view) {
 
     }
 }

@@ -12,9 +12,9 @@ import butterknife.Unbinder;
 /**
  * Author: ZouHaiping on 2017/6/19
  * E-Mail: haiping.zou@gotechcn.cn
- * Desc: BaseActivity中进行P和V的初始化绑定，并自动调用startPresenter, destroyPresenter
+ * Desc: BaseActivity中进行P和V的初始化绑定
  */
-public abstract class BaseActivity<P extends IBasePresenter> extends AppCompatActivity {
+public abstract class BaseActivity<P> extends AppCompatActivity {
 
     protected P mPresenter;
     private Unbinder mUnbinder;
@@ -26,7 +26,6 @@ public abstract class BaseActivity<P extends IBasePresenter> extends AppCompatAc
         setStatusBarColor();
         mUnbinder = ButterKnife.bind(this);
         createPresenter();
-        startPresenter();
     }
 
     @Override
@@ -35,19 +34,10 @@ public abstract class BaseActivity<P extends IBasePresenter> extends AppCompatAc
         if (mUnbinder != Unbinder.EMPTY) {
             mUnbinder.unbind();
         }
-        if (mPresenter != null) {
-            mPresenter.destroyPresenter();
-        }
     }
 
     private void setStatusBarColor() {
         StatusBarUtil.setColor(this, getResources().getColor(R.color.app_base), 127);
-    }
-
-    private void startPresenter() {
-        if (mPresenter != null) {
-            mPresenter.startPresenter();
-        }
     }
 
     protected abstract int getRootLayoutId();

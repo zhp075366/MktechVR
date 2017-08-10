@@ -31,7 +31,8 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> implements IVideoChannelContract.View, BaseQuickAdapter.RequestLoadMoreListener {
+public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter>
+        implements IVideoChannelView, BaseQuickAdapter.RequestLoadMoreListener {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -80,6 +81,7 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> im
 
     @Override
     public void onDestroyView() {
+        mPresenter.destroyPresenter();
         super.onDestroyView();
     }
 
@@ -141,7 +143,6 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> im
             mAdapter.loadMoreEnd();
             return;
         }
-
         mAdapter.addData(data);
         nPage++;
     }

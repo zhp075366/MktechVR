@@ -29,11 +29,6 @@
             android:screenOrientation="portrait">
         </activity>
 
-        <!--<activity-->
-            <!--android:name=".module.search.SearchActivity"-->
-            <!--android:configChanges="orientation|keyboardHidden"-->
-            <!--android:windowSoftInputMode="adjustUnspecified|stateHidden"/>-->
-
         <activity
             android:name=".module.player.VrPlayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

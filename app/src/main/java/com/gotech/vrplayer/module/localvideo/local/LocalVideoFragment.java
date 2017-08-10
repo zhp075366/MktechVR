@@ -19,7 +19,7 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implements ILocalVideoContract.View {
+public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implements ILocalVideoView {
 
     @BindView(R.id.text_view_text)
     TextView mTextView;
@@ -65,6 +65,16 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     protected void createPresenter() {
         mContext = getContext();
         mPresenter = new LocalVideoPresenter(mContext, this);
+    }
+
+    @Override
+    public void showLoading() {
+
+    }
+
+    @Override
+    public void hideLoading() {
+
     }
 
     private void initRecyclerView() {

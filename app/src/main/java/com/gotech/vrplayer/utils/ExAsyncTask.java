@@ -2,8 +2,6 @@ package com.gotech.vrplayer.utils;
 
 import android.os.AsyncTask;
 
-import com.socks.library.KLog;
-
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -31,7 +29,6 @@ public class ExAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Pro
     }
 
     public void cancle() {
-        KLog.i("isCancelled()=" + isCancelled());
         if (!isCancelled()) {
             cancel(true);
         }

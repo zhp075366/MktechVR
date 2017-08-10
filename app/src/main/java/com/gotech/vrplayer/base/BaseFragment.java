@@ -11,11 +11,11 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 /**
- * 作者：Zou Haiping on 2016/10/9 10:50
- * 邮箱：zhp075366@163.com
- * 公司：MKTech
+ * Author: ZouHaiping on 2017/8/10
+ * E-Mail: haiping.zou@gotechcn.cn
+ * Desc: BaseFragment中进行P和V的初始化绑定
  */
-public abstract class BaseFragment<P extends IBasePresenter> extends Fragment {
+public abstract class BaseFragment<P> extends Fragment {
 
     protected P mPresenter;
     private Unbinder mUnbinder;
@@ -32,27 +32,17 @@ public abstract class BaseFragment<P extends IBasePresenter> extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         createPresenter();
-        startPresenter();
     }
 
     protected abstract int getRootLayoutId();
 
     protected abstract void createPresenter();
 
-    private void startPresenter() {
-        if (mPresenter != null) {
-            mPresenter.startPresenter();
-        }
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (mUnbinder != Unbinder.EMPTY) {
             mUnbinder.unbind();
-        }
-        if (mPresenter != null) {
-            mPresenter.destroyPresenter();
         }
     }
 }

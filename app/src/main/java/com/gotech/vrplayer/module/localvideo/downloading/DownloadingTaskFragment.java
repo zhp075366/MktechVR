@@ -9,13 +9,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.utils.DensityUtil;
 import com.gotech.vrplayer.widget.CommonLineDivider;
 import com.lzy.okserver.download.DownloadTask;
-import com.socks.library.KLog;
 
 import java.util.List;
 
@@ -26,10 +26,12 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresenter> implements IDownloadingTaskContract.View {
+public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresenter> implements IDownloadingTaskView {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
+    @BindView(R.id.loading_progress)
+    ProgressBar mLoadingProgress;
 
     private Context mContext;
     private DownloadingTaskAdapter mAdapter;
@@ -63,20 +65,17 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView();
         mIsInit = true;
-        KLog.i("mIsInit = true");
     }
 
     @Override
     public void onDestroyView() {
-        // 当在当前Fragment退出app时，也要unRegisterListener
-        mPresenter.unRegisterListener();
+        mPresenter.destroyPresenter();
         super.onDestroyView();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        KLog.i("onResume...");
         lazyLoad();
     }
 
@@ -87,12 +86,12 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
 
     @Override
     public void showLoading() {
-
+        mLoadingProgress.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideLoading() {
-
+        mLoadingProgress.setVisibility(View.GONE);
     }
 
     @Override
@@ -106,15 +105,13 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
         super.setUserVisibleHint(isVisibleToUser);
         if (getUserVisibleHint()) {
             mIsVisible = true;
-            KLog.i("mIsVisible = true...");
             lazyLoad();
         } else {
             mIsVisible = false;
+            // 当前页面被切走
             if (mIsInit) {
-                // 当前页面被切走
                 mPresenter.unRegisterListener();
             }
-            KLog.i("mIsVisible = false...");
         }
     }
 
@@ -124,12 +121,10 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
         }
         // 从数据库中恢复未完成的任务并存在了OkDownload中的taskMap
         mPresenter.restoreDownloadingTasks();
-        KLog.i("lazyLoad()");
     }
 
     @Override
     public void showDownloadingTasks(List<DownloadTask> data) {
-        KLog.i("showDownloadingTasks...data.size()=" + data.size());
         if (data.size() == 0) {
             return;
         }
