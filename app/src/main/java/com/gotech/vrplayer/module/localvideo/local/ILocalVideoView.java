@@ -1,6 +1,9 @@
 package com.gotech.vrplayer.module.localvideo.local;
 
 import com.gotech.vrplayer.base.IBaseView;
+import com.gotech.vrplayer.model.bean.LocalVideoBean;
+
+import java.util.List;
 
 /**
  * Author: ZouHaiping on 2017/8/10
@@ -9,5 +12,6 @@ import com.gotech.vrplayer.base.IBaseView;
  */
 public interface ILocalVideoView extends IBaseView {
 
+    void showLocalVideo(List<LocalVideoBean> data);
 
 }

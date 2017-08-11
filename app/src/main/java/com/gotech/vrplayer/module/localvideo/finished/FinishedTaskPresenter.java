@@ -20,7 +20,6 @@ public class FinishedTaskPresenter {
     private IFinishedTaskView mView;
     private DownloadVideoManager mDownloadVideoManager;
     private ExAsyncTask<Void, Void, List<Progress>> mTask;
-    private static final int LOAD_FINISHED_TASK_TAG = 1;
     private ExAsyncTask.OnLoadListener mLoadDBListener;
 
     public FinishedTaskPresenter(Context context, IFinishedTaskView view) {
@@ -39,7 +38,6 @@ public class FinishedTaskPresenter {
     public void getFinishedTasks() {
         // 改为异步调用
         mTask = new ExAsyncTask<>();
-        mTask.setTaskTag(LOAD_FINISHED_TASK_TAG);
         mTask.setOnLoadListener(mLoadDBListener);
         mTask.executeOnExecutor(ExAsyncTask.CACHE_EXECUTOR);
     }

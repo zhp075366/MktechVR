@@ -20,7 +20,6 @@ public class DownloadingTaskPresenter {
     private IDownloadingTaskView mView;
     private DownloadVideoManager mDownloadVideoManager;
     private ExAsyncTask<Void, Void, List<DownloadTask>> mTask;
-    private static final int LOAD_DOWNLOADING_TASK_TAG = 1;
     private ExAsyncTask.OnLoadListener mLoadDBListener;
 
     public DownloadingTaskPresenter(Context context, IDownloadingTaskView view) {
@@ -55,7 +54,6 @@ public class DownloadingTaskPresenter {
     public void restoreDownloadingTasks() {
         // 改为异步调用
         mTask = new ExAsyncTask<>();
-        mTask.setTaskTag(LOAD_DOWNLOADING_TASK_TAG);
         mTask.setOnLoadListener(mLoadDBListener);
         mTask.executeOnExecutor(ExAsyncTask.CACHE_EXECUTOR);
     }
