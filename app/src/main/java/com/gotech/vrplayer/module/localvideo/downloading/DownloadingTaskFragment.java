@@ -125,10 +125,10 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
 
     @Override
     public void showDownloadingTasks(List<DownloadTask> data) {
+        mAdapter.setData(data);
         if (data.size() == 0) {
             return;
         }
-        mAdapter.setData(data);
         // OkDownload就可以直接启动taskMap中的任务
         mPresenter.startAllTasks();
     }

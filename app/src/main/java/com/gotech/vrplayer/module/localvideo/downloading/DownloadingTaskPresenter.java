@@ -64,13 +64,12 @@ public class DownloadingTaskPresenter {
         mLoadDBListener = new ExAsyncTask.OnLoadListener<Void, Void, List<DownloadTask>>() {
             @Override
             public void onStart(int taskTag) {
-                KLog.i("onStart");
                 mView.showLoading();
             }
 
             @Override
             public void onCancel(int taskTag) {
-                KLog.i("onCancel");
+
             }
 
             @Override
