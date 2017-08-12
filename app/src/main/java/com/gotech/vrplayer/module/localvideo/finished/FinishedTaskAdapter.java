@@ -25,7 +25,6 @@ public class FinishedTaskAdapter extends BaseQuickAdapter<Progress, BaseViewHold
 
     @Override
     protected void convert(BaseViewHolder holder, Progress item) {
-        Context context = holder.itemView.getContext();
         DownloadVideoBean bean = (DownloadVideoBean)item.extra1;
         String currentSize = Formatter.formatFileSize(mContext, item.currentSize);
         String totalSize = Formatter.formatFileSize(mContext, item.totalSize);
@@ -35,6 +34,6 @@ public class FinishedTaskAdapter extends BaseQuickAdapter<Progress, BaseViewHold
         NumberProgressBar progressBar = holder.getView(R.id.nbProgress);
         progressBar.setMax(10000);
         progressBar.setProgress((int)(item.fraction * 10000));
-        Glide.with(context).load(bean.iconUrl).placeholder(R.mipmap.ic_launcher).into(ivIcon);
+        Glide.with(mContext).load(bean.iconUrl).placeholder(R.mipmap.ic_launcher).into(ivIcon);
     }
 }

@@ -12,15 +12,12 @@ import java.util.concurrent.Executors;
  */
 public class ExAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
 
-    private int mTaskTag;
+    private Object mTaskTag;
     private OnLoadListener<Params, Progress, Result> mListener;
-    public static final Executor CACHE_EXECUTOR = Executors.newCachedThreadPool();
+    public static final Executor THREAD_POOL_CACHED = Executors.newCachedThreadPool();
+    public static final Executor THREAD_POOL_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
 
-    public ExAsyncTask() {
-
-    }
-
-    public void setTaskTag(int taskTag) {
+    public void setTaskTag(Object taskTag) {
         mTaskTag = taskTag;
     }
 
@@ -69,15 +66,15 @@ public class ExAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Pro
 
     public interface OnLoadListener<Params, Progress, Result> {
 
-        void onStart(int taskTag);
+        void onStart(Object taskTag);
 
-        void onCancel(int taskTag);
+        void onCancel(Object taskTag);
 
-        void onResult(int taskTag, Result result);
+        void onResult(Object taskTag, Result result);
 
-        void onProgress(int taskTag, Progress values);
+        void onProgress(Object taskTag, Progress values);
 
-        Result onWorkerThread(int taskTag, Params... params);
+        Result onWorkerThread(Object taskTag, Params... params);
 
     }
 }

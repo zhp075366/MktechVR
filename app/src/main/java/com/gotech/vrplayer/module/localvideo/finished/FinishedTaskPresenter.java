@@ -39,35 +39,35 @@ public class FinishedTaskPresenter {
         // 改为异步调用
         mTask = new ExAsyncTask<>();
         mTask.setOnLoadListener(mLoadDBListener);
-        mTask.executeOnExecutor(ExAsyncTask.CACHE_EXECUTOR);
+        mTask.executeOnExecutor(ExAsyncTask.THREAD_POOL_CACHED);
     }
 
     private void initLoadDBListener() {
         mLoadDBListener = new ExAsyncTask.OnLoadListener<Void, Void, List<Progress>>() {
             @Override
-            public void onStart(int taskTag) {
+            public void onStart(Object taskTag) {
                 mView.showLoading();
             }
 
             @Override
-            public void onCancel(int taskTag) {
+            public void onCancel(Object taskTag) {
 
             }
 
             @Override
-            public void onResult(int taskTag, List<Progress> progresses) {
+            public void onResult(Object taskTag, List<Progress> progresses) {
                 KLog.i("onResult");
                 mView.hideLoading();
                 mView.showFinishedTasks(progresses);
             }
 
             @Override
-            public void onProgress(int taskTag, Void values) {
+            public void onProgress(Object taskTag, Void values) {
 
             }
 
             @Override
-            public List<Progress> onWorkerThread(int taskTag, Void... params) {
+            public List<Progress> onWorkerThread(Object taskTag, Void... params) {
                 return mDownloadVideoManager.getFinishedProgress();
             }
         };

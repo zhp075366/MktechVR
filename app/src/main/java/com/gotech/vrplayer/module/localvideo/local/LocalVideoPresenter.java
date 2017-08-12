@@ -39,35 +39,35 @@ public class LocalVideoPresenter {
     public void getAllVideo() {
         mTask = new ExAsyncTask<>();
         mTask.setOnLoadListener(mLoadVideoListener);
-        mTask.executeOnExecutor(ExAsyncTask.CACHE_EXECUTOR);
+        mTask.executeOnExecutor(ExAsyncTask.THREAD_POOL_CACHED);
     }
 
     private void initLoadVideoListener() {
         mLoadVideoListener = new ExAsyncTask.OnLoadListener<Void, Void, List<LocalVideoBean>>() {
             @Override
-            public void onStart(int taskTag) {
+            public void onStart(Object taskTag) {
                 mView.showLoading();
             }
 
             @Override
-            public void onCancel(int taskTag) {
+            public void onCancel(Object taskTag) {
 
             }
 
             @Override
-            public void onResult(int taskTag, List<LocalVideoBean> localVideoBeen) {
+            public void onResult(Object taskTag, List<LocalVideoBean> localVideoBeen) {
                 KLog.i("onResult");
                 mView.hideLoading();
                 mView.showLocalVideo(localVideoBeen);
             }
 
             @Override
-            public void onProgress(int taskTag, Void values) {
+            public void onProgress(Object taskTag, Void values) {
 
             }
 
             @Override
-            public List<LocalVideoBean> onWorkerThread(int taskTag, Void... params) {
+            public List<LocalVideoBean> onWorkerThread(Object taskTag, Void... params) {
                 return mModel.getLocalVideoData();
             }
         };
