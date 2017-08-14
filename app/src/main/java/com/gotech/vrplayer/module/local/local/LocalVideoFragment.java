@@ -1,7 +1,6 @@
 package com.gotech.vrplayer.module.local.local;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,7 +16,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
-import com.gotech.vrplayer.module.video.detail.VideoDetailActivity;
+import com.gotech.vrplayer.module.player.VrPlayerActivity;
 import com.gotech.vrplayer.utils.DensityUtil;
 import com.gotech.vrplayer.widget.SpecialLineDivider;
 import com.socks.library.KLog;
@@ -140,8 +139,8 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 // 此position不包括header和footer,和data list保持一致
-                KLog.i("onItemClick position=" + position + " " + data.get(position).getDisplayName());
-                startActivity(new Intent(mContext, VideoDetailActivity.class));
+                KLog.i("onItemClick position=" + position + " " + data.get(position).getPath());
+                VrPlayerActivity.startVrPlayerActivity(mContext, data.get(position).getPath());
             }
         });
     }
