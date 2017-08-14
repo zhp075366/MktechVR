@@ -1,11 +1,10 @@
-package com.gotech.vrplayer.module.netvideo.detail;
+package com.gotech.vrplayer.module.video;
 
 import android.content.Context;
 
 import com.gotech.vrplayer.event.LoadingDataEvent;
-import com.gotech.vrplayer.model.IVideoDetailModel;
-import com.gotech.vrplayer.model.impl.VideoDetailModelImpl;
-import com.gotech.vrplayer.module.localvideo.DownloadVideoManager;
+import com.gotech.vrplayer.model.IVideoChannelModel;
+import com.gotech.vrplayer.model.impl.VideoChannelModelImpl;
 import com.gotech.vrplayer.utils.NetworkUtil;
 
 import org.greenrobot.eventbus.EventBus;
@@ -17,20 +16,18 @@ import org.greenrobot.eventbus.ThreadMode;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoDetailPresenter {
+public class VideoChannelPresenter {
 
-    private String mEventCode;
     private Context mContext;
-    private IVideoDetailModel mModel;
-    private IVideoDetailView mView;
-    private DownloadVideoManager mDownloadVideoManager;
+    private IVideoChannelModel mModel;
+    private IVideoChannelView mView;
+    private String mEventCode;
 
-    public VideoDetailPresenter(Context context, IVideoDetailView view) {
+    public VideoChannelPresenter(Context context, IVideoChannelView view) {
         mView = view;
         mContext = context;
-        mModel = new VideoDetailModelImpl();
-        mDownloadVideoManager = DownloadVideoManager.getInstance();
-        mEventCode = LoadingDataEvent.VIDEO_DETAIL_EVENT_CODE;
+        mModel = new VideoChannelModelImpl();
+        mEventCode = mView.getChannelCode();
         EventBus.getDefault().register(this);
     }
 
@@ -52,6 +49,7 @@ public class VideoDetailPresenter {
         }
     }
 
+    // 异步加载
     public void loadMore() {
         boolean hasNetWork = NetworkUtil.checkNetworkConnection(mContext);
         if (!hasNetWork) {
@@ -59,15 +57,12 @@ public class VideoDetailPresenter {
             return;
         }
         int page = mView.getLoadPageNum();
-        mModel.loadMore(page);
+        mModel.loadMore(page, mEventCode);
     }
 
+    // 异步加载
     public void getFirstLoadData() {
         mView.showLoading();
-        mModel.getFirstLoadData();
-    }
-
-    public AddTaskResult addTask() {
-        return mDownloadVideoManager.addOneTask();
+        mModel.getFirstLoadData(mEventCode);
     }
 }

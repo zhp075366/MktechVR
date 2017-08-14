@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.netvideo.detail;
+package com.gotech.vrplayer.module.video.detail;
 
 /**
  * Author: ZouHaiping on 2017/7/27

@@ -1,10 +1,10 @@
-package com.gotech.vrplayer.module.localvideo.downloading;
+package com.gotech.vrplayer.module.local.finished;
 
 import android.content.Context;
 
-import com.gotech.vrplayer.module.localvideo.DownloadVideoManager;
+import com.gotech.vrplayer.module.local.DownloadVideoManager;
 import com.gotech.vrplayer.utils.ExAsyncTask;
-import com.lzy.okserver.download.DownloadTask;
+import com.lzy.okgo.model.Progress;
 import com.socks.library.KLog;
 
 import java.util.List;
@@ -14,15 +14,15 @@ import java.util.List;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class DownloadingTaskPresenter {
+public class FinishedTaskPresenter {
 
     private Context mContext;
-    private IDownloadingTaskView mView;
+    private IFinishedTaskView mView;
     private DownloadVideoManager mDownloadVideoManager;
-    private ExAsyncTask<Void, Void, List<DownloadTask>> mTask;
+    private ExAsyncTask<Void, Void, List<Progress>> mTask;
     private ExAsyncTask.OnLoadListener mLoadDBListener;
 
-    public DownloadingTaskPresenter(Context context, IDownloadingTaskView view) {
+    public FinishedTaskPresenter(Context context, IFinishedTaskView view) {
         mView = view;
         mContext = context;
         mDownloadVideoManager = DownloadVideoManager.getInstance();
@@ -33,25 +33,9 @@ public class DownloadingTaskPresenter {
         if (mTask != null) {
             mTask.cancle();
         }
-        unRegisterListener();
     }
 
-    public void unRegisterListener() {
-        // 取消下载进度监听
-        mDownloadVideoManager.unRegisterListener();
-    }
-
-    public void removeOneTask(String tag) {
-        // 在onFinish时从OkDownload中移除taskMap，以确保taskMap中为正在下载中的任务
-        mDownloadVideoManager.removeOneTask(tag);
-    }
-
-    public void startAllTasks() {
-        // 重启一次所有的Tasks，防止因异常中止的情况，让其继续下载
-        mDownloadVideoManager.startAllTasks();
-    }
-
-    public void restoreDownloadingTasks() {
+    public void getFinishedTasks() {
         // 改为异步调用
         mTask = new ExAsyncTask<>();
         mTask.setOnLoadListener(mLoadDBListener);
@@ -59,7 +43,7 @@ public class DownloadingTaskPresenter {
     }
 
     private void initLoadDBListener() {
-        mLoadDBListener = new ExAsyncTask.OnLoadListener<Void, Void, List<DownloadTask>>() {
+        mLoadDBListener = new ExAsyncTask.OnLoadListener<Void, Void, List<Progress>>() {
             @Override
             public void onStart(Object taskTag) {
                 mView.showLoading();
@@ -71,10 +55,10 @@ public class DownloadingTaskPresenter {
             }
 
             @Override
-            public void onResult(Object taskTag, List<DownloadTask> tasks) {
+            public void onResult(Object taskTag, List<Progress> progresses) {
                 KLog.i("onResult");
                 mView.hideLoading();
-                mView.showDownloadingTasks(tasks);
+                mView.showFinishedTasks(progresses);
             }
 
             @Override
@@ -83,8 +67,8 @@ public class DownloadingTaskPresenter {
             }
 
             @Override
-            public List<DownloadTask> onWorkerThread(Object taskTag, Void... params) {
-                return mDownloadVideoManager.restoreDownloadingTasks();
+            public List<Progress> onWorkerThread(Object taskTag, Void... params) {
+                return mDownloadVideoManager.getFinishedProgress();
             }
         };
     }

@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.netvideo;
+package com.gotech.vrplayer.module.video;
 
 import android.content.Context;
 import android.os.Bundle;

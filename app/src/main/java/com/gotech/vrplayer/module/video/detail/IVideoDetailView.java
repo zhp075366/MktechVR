@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.netvideo;
+package com.gotech.vrplayer.module.video.detail;
 
 import com.gotech.vrplayer.base.IBaseView;
 import com.gotech.vrplayer.model.bean.HomePictureBean;
@@ -10,11 +10,9 @@ import java.util.List;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public interface IVideoChannelView extends IBaseView {
+public interface IVideoDetailView extends IBaseView {
 
     int getLoadPageNum();
-
-    String getChannelCode();
 
     void showNetError();
 

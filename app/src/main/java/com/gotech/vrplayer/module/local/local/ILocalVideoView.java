@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.localvideo.local;
+package com.gotech.vrplayer.module.local.local;
 
 import com.gotech.vrplayer.base.IBaseView;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;

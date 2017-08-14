@@ -1,6 +1,5 @@
-package com.gotech.vrplayer.module.localvideo.finished;
+package com.gotech.vrplayer.module.local.finished;
 
-import android.content.Context;
 import android.text.format.Formatter;
 import android.widget.ImageView;
 

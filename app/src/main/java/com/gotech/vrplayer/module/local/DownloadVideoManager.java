@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.localvideo;
+package com.gotech.vrplayer.module.local;
 
 import android.widget.Toast;
 
@@ -6,7 +6,7 @@ import com.gotech.vrplayer.VRApplication;
 import com.gotech.vrplayer.model.IDownloadVideoModel;
 import com.gotech.vrplayer.model.bean.DownloadVideoBean;
 import com.gotech.vrplayer.model.impl.DownloadVideoModelImpl;
-import com.gotech.vrplayer.module.netvideo.detail.AddTaskResult;
+import com.gotech.vrplayer.module.video.detail.AddTaskResult;
 import com.gotech.vrplayer.utils.SDCardUtil;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.lzy.okgo.OkGo;

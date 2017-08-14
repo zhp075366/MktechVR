@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.localvideo;
+package com.gotech.vrplayer.module.local;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,9 +13,9 @@ import android.view.ViewGroup;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
-import com.gotech.vrplayer.module.localvideo.downloading.DownloadingTaskFragment;
-import com.gotech.vrplayer.module.localvideo.finished.FinishedTaskFragment;
-import com.gotech.vrplayer.module.localvideo.local.LocalVideoFragment;
+import com.gotech.vrplayer.module.local.downloading.DownloadingTaskFragment;
+import com.gotech.vrplayer.module.local.finished.FinishedTaskFragment;
+import com.gotech.vrplayer.module.local.local.LocalVideoFragment;
 
 import java.util.ArrayList;
 import java.util.List;

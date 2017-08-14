@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.localvideo.local;
+package com.gotech.vrplayer.module.local.local;
 
 import android.content.Context;
 

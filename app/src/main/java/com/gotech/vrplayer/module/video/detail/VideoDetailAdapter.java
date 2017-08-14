@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.netvideo;
+package com.gotech.vrplayer.module.video.detail;
 
 import android.content.Context;
 import android.widget.ImageView;
@@ -14,14 +14,14 @@ import com.gotech.vrplayer.model.bean.HomePictureBean;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoChannelAdapter extends BaseQuickAdapter<HomePictureBean, BaseViewHolder> {
+public class VideoDetailAdapter extends BaseQuickAdapter<HomePictureBean, BaseViewHolder> {
 
-    public VideoChannelAdapter() {
-        super(R.layout.adapter_video_channel_item);
+    public VideoDetailAdapter() {
+        super(R.layout.adapter_video_detail_item);
     }
 
     @Override
-    protected void convert(BaseViewHolder helper, HomePictureBean item) {
+    protected void convert(com.chad.library.adapter.base.BaseViewHolder helper, HomePictureBean item) {
         helper.setText(R.id.text_view_main_describe, item.getMainDescribe());
         helper.setText(R.id.text_view_sub_describe, item.getSubDescribe());
 

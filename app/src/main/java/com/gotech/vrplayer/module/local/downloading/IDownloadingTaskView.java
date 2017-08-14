@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.localvideo.downloading;
+package com.gotech.vrplayer.module.local.downloading;
 
 import com.gotech.vrplayer.base.IBaseView;
 import com.lzy.okserver.download.DownloadTask;

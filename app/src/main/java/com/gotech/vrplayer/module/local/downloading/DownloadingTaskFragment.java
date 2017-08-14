@@ -1,8 +1,10 @@
-package com.gotech.vrplayer.module.localvideo.local;
+package com.gotech.vrplayer.module.local.downloading;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,8 +13,9 @@ import android.widget.ProgressBar;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
-import com.gotech.vrplayer.model.bean.LocalVideoBean;
-import com.socks.library.KLog;
+import com.gotech.vrplayer.utils.DensityUtil;
+import com.gotech.vrplayer.widget.CommonLineDivider;
+import com.lzy.okserver.download.DownloadTask;
 
 import java.util.List;
 
@@ -23,7 +26,7 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implements ILocalVideoView {
+public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresenter> implements IDownloadingTaskView {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -31,16 +34,17 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     ProgressBar mLoadingProgress;
 
     private Context mContext;
+    private DownloadingTaskAdapter mAdapter;
 
     // 当前fragment view是否已经初始化
     private boolean mIsInit;
     // 当前fragment view是否可见
     private boolean mIsVisible;
 
-    public static LocalVideoFragment newInstance(String arg) {
+    public static DownloadingTaskFragment newInstance(String arg) {
         Bundle args = new Bundle();
         args.putString("ARGS", arg);
-        LocalVideoFragment fragment = new LocalVideoFragment();
+        DownloadingTaskFragment fragment = new DownloadingTaskFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -70,14 +74,14 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     }
 
     @Override
-    protected int getRootLayoutId() {
-        return R.layout.fragment_local_video;
+    public void onResume() {
+        super.onResume();
+        lazyLoad();
     }
 
     @Override
-    protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new LocalVideoPresenter(mContext, this);
+    protected int getRootLayoutId() {
+        return R.layout.fragment_downloading_video;
     }
 
     @Override
@@ -91,6 +95,12 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     }
 
     @Override
+    protected void createPresenter() {
+        mContext = getContext();
+        mPresenter = new DownloadingTaskPresenter(mContext, this);
+    }
+
+    @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (getUserVisibleHint()) {
@@ -98,6 +108,10 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
             lazyLoad();
         } else {
             mIsVisible = false;
+            // 当前页面被切走
+            if (mIsInit) {
+                mPresenter.unRegisterListener();
+            }
         }
     }
 
@@ -105,16 +119,30 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
         if (!mIsInit || !mIsVisible) {
             return;
         }
-        // 加载本地视频数据
-        mPresenter.getAllVideo();
+        // 从数据库中恢复未完成的任务并存在了OkDownload中的taskMap
+        mPresenter.restoreDownloadingTasks();
     }
 
     @Override
-    public void showLocalVideo(List<LocalVideoBean> data) {
-        KLog.i("List<LocalVideoBean> size->" + data.size());
+    public void showDownloadingTasks(List<DownloadTask> data) {
+        mAdapter.setData(data);
+        if (data.size() == 0) {
+            return;
+        }
+        // OkDownload就可以直接启动taskMap中的任务
+        mPresenter.startAllTasks();
     }
 
     private void initRecyclerView() {
-        String arg = getArguments().getString("ARGS");
+        int height = (int)DensityUtil.dp2Px(mContext, 1f);
+        int padding = (int)DensityUtil.dp2Px(mContext, 5f);
+        // 分割线颜色 & 高度 & 左边距 & 右边距
+        CommonLineDivider itemDecoration = new CommonLineDivider(Color.LTGRAY, height, padding, padding);
+        itemDecoration.setDrawLastItem(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
+        mAdapter = new DownloadingTaskAdapter(mContext, mPresenter);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addItemDecoration(itemDecoration);
     }
 }

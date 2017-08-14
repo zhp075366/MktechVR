@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.localvideo.finished;
+package com.gotech.vrplayer.module.local.finished;
 
 import com.gotech.vrplayer.base.IBaseView;
 import com.lzy.okgo.model.Progress;

@@ -1,10 +1,8 @@
-package com.gotech.vrplayer.module.localvideo.finished;
+package com.gotech.vrplayer.module.local.local;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,9 +11,8 @@ import android.widget.ProgressBar;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
-import com.gotech.vrplayer.utils.DensityUtil;
-import com.gotech.vrplayer.widget.SpecialLineDivider;
-import com.lzy.okgo.model.Progress;
+import com.gotech.vrplayer.model.bean.LocalVideoBean;
+import com.socks.library.KLog;
 
 import java.util.List;
 
@@ -26,7 +23,7 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> implements IFinishedTaskView {
+public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implements ILocalVideoView {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -34,17 +31,16 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     ProgressBar mLoadingProgress;
 
     private Context mContext;
-    private FinishedTaskAdapter mAdapter;
 
     // 当前fragment view是否已经初始化
     private boolean mIsInit;
     // 当前fragment view是否可见
     private boolean mIsVisible;
 
-    public static FinishedTaskFragment newInstance(String arg) {
+    public static LocalVideoFragment newInstance(String arg) {
         Bundle args = new Bundle();
         args.putString("ARGS", arg);
-        FinishedTaskFragment fragment = new FinishedTaskFragment();
+        LocalVideoFragment fragment = new LocalVideoFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,14 +59,25 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mIsInit = true;
         initRecyclerView();
-        lazyLoad();
+        mIsInit = true;
     }
 
     @Override
     public void onDestroyView() {
+        mPresenter.destroyPresenter();
         super.onDestroyView();
+    }
+
+    @Override
+    protected int getRootLayoutId() {
+        return R.layout.fragment_local_video;
+    }
+
+    @Override
+    protected void createPresenter() {
+        mContext = getContext();
+        mPresenter = new LocalVideoPresenter(mContext, this);
     }
 
     @Override
@@ -81,17 +88,6 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     @Override
     public void hideLoading() {
         mLoadingProgress.setVisibility(View.GONE);
-    }
-
-    @Override
-    protected int getRootLayoutId() {
-        return R.layout.fragment_downloading_video;
-    }
-
-    @Override
-    protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new FinishedTaskPresenter(mContext, this);
     }
 
     @Override
@@ -109,27 +105,16 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
         if (!mIsInit || !mIsVisible) {
             return;
         }
-        mPresenter.getFinishedTasks();
+        // 加载本地视频数据
+        mPresenter.getAllVideo();
     }
 
     @Override
-    public void showFinishedTasks(List<Progress> data) {
-        if (data.size() == 0) {
-            return;
-        }
-        mAdapter.setNewData(data);
+    public void showLocalVideo(List<LocalVideoBean> data) {
+        KLog.i("List<LocalVideoBean> size->" + data.size());
     }
 
     private void initRecyclerView() {
-        int height = (int)DensityUtil.dp2Px(mContext, 0.8f);
-        int padding = (int)DensityUtil.dp2Px(mContext, 5f);
-        // 分割线颜色 & 高度 & 左边距 & 右边距
-        SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
-        itemDecoration.setDrawLastItem(false);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
-        mAdapter = new FinishedTaskAdapter();
-        mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(itemDecoration);
+        String arg = getArguments().getString("ARGS");
     }
 }

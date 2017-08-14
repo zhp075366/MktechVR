@@ -1,4 +1,4 @@
-package com.gotech.vrplayer.module.netvideo;
+package com.gotech.vrplayer.module.video;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +17,7 @@ import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.HomePictureBean;
 import com.gotech.vrplayer.model.bean.VideoChannelBean;
-import com.gotech.vrplayer.module.netvideo.detail.VideoDetailActivity;
+import com.gotech.vrplayer.module.video.detail.VideoDetailActivity;
 import com.gotech.vrplayer.utils.DensityUtil;
 import com.gotech.vrplayer.widget.SpecialLineDivider;
 import com.socks.library.KLog;
