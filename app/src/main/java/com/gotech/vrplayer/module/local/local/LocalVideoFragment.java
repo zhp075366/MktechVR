@@ -1,6 +1,7 @@
 package com.gotech.vrplayer.module.local.local;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,11 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
+import com.gotech.vrplayer.module.video.detail.VideoDetailActivity;
 import com.gotech.vrplayer.utils.DensityUtil;
 import com.gotech.vrplayer.widget.SpecialLineDivider;
+import com.socks.library.KLog;
 
 import java.util.List;
 
@@ -122,12 +126,24 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
         if (data.size() == 0) {
             return;
         }
+        setItemClickListener(data);
         mAdapter.setData(data);
     }
 
     @Override
     public void setThumbnail(int position, Bitmap bitmap) {
         mAdapter.setThumbnail(position, bitmap);
+    }
+
+    private void setItemClickListener(final List<LocalVideoBean> data) {
+        mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                // 此position不包括header和footer,和data list保持一致
+                KLog.i("onItemClick position=" + position + " " + data.get(position).getDisplayName());
+                startActivity(new Intent(mContext, VideoDetailActivity.class));
+            }
+        });
     }
 
     private void initRecyclerView() {

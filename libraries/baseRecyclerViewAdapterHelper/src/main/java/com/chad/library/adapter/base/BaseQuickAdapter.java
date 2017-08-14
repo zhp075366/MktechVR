@@ -310,7 +310,7 @@ public abstract class BaseQuickAdapter<T, K extends BaseViewHolder> extends Recy
     /**
      * Set custom load more
      *
-     * @param loadingView
+     * @param loadingView 加载视图
      */
     public void setLoadMoreView(LoadMoreView loadingView) {
         this.mLoadMoreView = loadingView;
@@ -568,8 +568,11 @@ public abstract class BaseQuickAdapter<T, K extends BaseViewHolder> extends Recy
      * @param data data collection
      */
     public void replaceData(@NonNull Collection<? extends T> data) {
-        mData.clear();
-        mData.addAll(data);
+        // 不是同一个引用才清空列表
+        if (data != mData) {
+            mData.clear();
+            mData.addAll(data);
+        }
         notifyDataSetChanged();
     }
 
@@ -588,7 +591,7 @@ public abstract class BaseQuickAdapter<T, K extends BaseViewHolder> extends Recy
     /**
      * Get the data of list
      *
-     * @return
+     * @return 列表数据
      */
     @NonNull
     public List<T> getData() {
@@ -1001,8 +1004,14 @@ public abstract class BaseQuickAdapter<T, K extends BaseViewHolder> extends Recy
             z = getInstancedGenericKClass(temp);
             temp = temp.getSuperclass();
         }
-        K k = createGenericKInstance(z, view);
-        return null != k ? k : (K) new BaseViewHolder(view);
+        K k;
+        // 泛型擦除会导致z为null
+        if (z == null) {
+            k = (K) new BaseViewHolder(view);
+        } else {
+            k = createGenericKInstance(z, view);
+        }
+        return k != null ? k : (K) new BaseViewHolder(view);
     }
 
     /**
@@ -1707,7 +1716,7 @@ public abstract class BaseQuickAdapter<T, K extends BaseViewHolder> extends Recy
     }
 
     public void expandAll() {
-        for (int i = mData.size() - 1; i >= 0 + getHeaderLayoutCount(); i--) {
+        for (int i = mData.size() - 1; i >= getHeaderLayoutCount(); i--) {
             expandAll(i, false, false);
         }
     }

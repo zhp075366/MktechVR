@@ -27,7 +27,6 @@ public class LocalVideoPresenter {
     private ILocalVideoModel mModel;
     private AsyncTaskWrapper.OnLoadListener mLoadVideoListener;
     private AsyncTaskWrapper<Void, Void, List<LocalVideoBean>> mLoadVideoTask;
-
     // 视频缩略图加载任务
     private ThumbnailAsyncTask[] mThumbnailTasks;
 
@@ -85,7 +84,7 @@ public class LocalVideoPresenter {
 
             @Override
             public void onResult(Object taskTag, List<LocalVideoBean> localVideoBeen) {
-                KLog.i("onResult");
+                KLog.i("loadVideo onResult");
                 mView.hideLoading();
                 mView.showLocalVideo(localVideoBeen);
             }

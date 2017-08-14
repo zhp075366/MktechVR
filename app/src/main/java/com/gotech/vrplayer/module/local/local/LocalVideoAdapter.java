@@ -7,6 +7,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
+import com.gotech.vrplayer.utils.Constants;
 
 import java.util.List;
 
@@ -39,10 +40,18 @@ public class LocalVideoAdapter extends BaseQuickAdapter<LocalVideoBean, BaseView
     @Override
     protected void convert(BaseViewHolder helper, LocalVideoBean item) {
         int position = helper.getAdapterPosition();
-        String resString = mContext.getResources().getString(R.string.local_video_size_duration);
-        String sizeDuration = String.format(resString, item.getSize(), item.getDuration());
+        String formatStr, sizeStr;
+        if (item.getSize() > Constants.ONE_MB_SIZE) {
+            formatStr = mContext.getResources().getString(R.string.local_video_size_duration_in_mb);
+            sizeStr = Constants.TWO_DECIMAL_FORMAT.format((double)item.getSize() / 1024 / 1024);
+        } else {
+            formatStr = mContext.getResources().getString(R.string.local_video_size_duration_in_kb);
+            sizeStr = Constants.TWO_DECIMAL_FORMAT.format((double)item.getSize() / 1024);
+        }
+        String durationStr = Constants.ONE_DECIMAL_FORMAT.format((double)item.getDuration() / 60 / 60);
+        String sizeDurationStr = String.format(formatStr, sizeStr, durationStr);
         helper.setText(R.id.tv_title, item.getDisplayName());
-        helper.setText(R.id.tv_size_duration, sizeDuration);
+        helper.setText(R.id.tv_size_duration, sizeDurationStr);
         helper.setText(R.id.tv_path, item.getPath());
         ImageView thumbnailView = helper.getView(R.id.iv_thumbnail);
         if (mThumbnailBitmaps[position] == null) {
