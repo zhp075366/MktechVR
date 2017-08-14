@@ -134,13 +134,14 @@ public class DownloadVideoModelImpl implements IDownloadVideoModel {
         //        apk11.downUrl = "http://60.22.46.1/f3.market.xiaomi.com/download/AppStore/0b02f24ffa8334bd21b16bd70ecacdb42374eb9cb/com.wepie.snake.new.mi.apk";
         //        videos.add(apk11);
         //
-        //        DownloadVideoBean apk12 = new DownloadVideoBean();
-        //        apk12.showName = "蘑菇街";
-        //        apk12.saveName = "com.mogujie_save.apk";
-        //        apk12.iconUrl = "http://file.market.xiaomi.com/thumbnail/PNG/l114/AppStore/0ab53044735e842c421a57954d86a77aea30cc1da";
-        //        apk12.downUrl = "http://121.29.10.1/f5.market.xiaomi.com/download/AppStore/07a6ee4955e364c3f013b14055c37b8e4f6668161/com.mogujie.apk";
-        //        videos.add(apk12);
-        //
+        DownloadVideoBean apk12 = new DownloadVideoBean();
+        apk12.showName = "QQ";
+        apk12.saveName = "com.tencent.qq_save.apk";
+        apk12.iconUrl = "";
+        apk12.downUrl = "http://gdown.baidu.com/data/wisegame/74ac7c397e120549/QQ_708.apk";
+        apk12.totalSize = 43566497;
+        videos.add(apk12);
+
         DownloadVideoBean apk13 = new DownloadVideoBean();
         apk13.showName = "聚美优品";
         apk13.saveName = "com.jm.android.jumei_save.apk";

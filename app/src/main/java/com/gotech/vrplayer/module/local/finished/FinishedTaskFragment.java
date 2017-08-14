@@ -63,8 +63,8 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mIsInit = true;
         initRecyclerView();
+        mIsInit = true;
         lazyLoad();
     }
 

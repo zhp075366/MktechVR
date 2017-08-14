@@ -1,8 +1,10 @@
 package com.gotech.vrplayer.module.local.local;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,8 @@ import android.widget.ProgressBar;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
+import com.gotech.vrplayer.utils.DensityUtil;
+import com.gotech.vrplayer.widget.SpecialLineDivider;
 import com.socks.library.KLog;
 
 import java.util.List;
@@ -31,6 +35,7 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     ProgressBar mLoadingProgress;
 
     private Context mContext;
+    private LocalVideoAdapter mAdapter;
 
     // 当前fragment view是否已经初始化
     private boolean mIsInit;
@@ -61,6 +66,7 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView();
         mIsInit = true;
+        lazyLoad();
     }
 
     @Override
@@ -105,16 +111,28 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
         if (!mIsInit || !mIsVisible) {
             return;
         }
-        // 加载本地视频数据
         mPresenter.getAllVideo();
     }
 
     @Override
     public void showLocalVideo(List<LocalVideoBean> data) {
-        KLog.i("List<LocalVideoBean> size->" + data.size());
+        KLog.i("showLocalVideo size=" + data.size());
+        if (data.size() == 0) {
+            return;
+        }
+        mAdapter.setNewData(data);
     }
 
     private void initRecyclerView() {
-        String arg = getArguments().getString("ARGS");
+        int height = (int)DensityUtil.dp2Px(mContext, 0.8f);
+        int padding = (int)DensityUtil.dp2Px(mContext, 5f);
+        // 分割线颜色 & 高度 & 左边距 & 右边距
+        SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
+        itemDecoration.setDrawLastItem(false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
+        mAdapter = new LocalVideoAdapter();
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addItemDecoration(itemDecoration);
     }
 }

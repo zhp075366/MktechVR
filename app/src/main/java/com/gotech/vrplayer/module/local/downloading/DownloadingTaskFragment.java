@@ -134,11 +134,11 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
     }
 
     private void initRecyclerView() {
-        int height = (int)DensityUtil.dp2Px(mContext, 1f);
+        int height = (int)DensityUtil.dp2Px(mContext, 0.8f);
         int padding = (int)DensityUtil.dp2Px(mContext, 5f);
         // 分割线颜色 & 高度 & 左边距 & 右边距
         CommonLineDivider itemDecoration = new CommonLineDivider(Color.LTGRAY, height, padding, padding);
-        itemDecoration.setDrawLastItem(true);
+        itemDecoration.setDrawLastItem(false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
         mAdapter = new DownloadingTaskAdapter(mContext, mPresenter);
         mRecyclerView.setLayoutManager(layoutManager);

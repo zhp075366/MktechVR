@@ -6,7 +6,6 @@ import android.provider.MediaStore;
 
 import com.gotech.vrplayer.model.ILocalVideoModel;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
-import com.socks.library.KLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,6 @@ public class LocalVideoModelImpl implements ILocalVideoModel {
             bean.setDuration(duration);
             bean.setSize(size);
             videoList.add(bean);
-            KLog.i("displayName->" + bean.getDisplayName());
         }
         cursor.close();
         return videoList;

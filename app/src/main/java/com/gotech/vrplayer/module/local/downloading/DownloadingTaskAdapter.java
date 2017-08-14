@@ -63,7 +63,7 @@ public class DownloadingTaskAdapter extends RecyclerView.Adapter<DownloadingTask
         DownloadTask task = mData.get(position);
         Progress progress = task.progress;
         String tag = progress.tag;
-        task.register(new ListDownloadListener(tag, holder));
+        task.register(new DownloadingTaskListener(tag, holder));
         holder.setTag(tag);
         holder.setTask(task);
         holder.bindItem(progress);
@@ -147,11 +147,11 @@ public class DownloadingTaskAdapter extends RecyclerView.Adapter<DownloadingTask
         }
     }
 
-    private class ListDownloadListener extends DownloadListener {
+    private class DownloadingTaskListener extends DownloadListener {
 
         private ViewHolder holder;
 
-        ListDownloadListener(Object tag, ViewHolder holder) {
+        DownloadingTaskListener(Object tag, ViewHolder holder) {
             super(tag);
             this.holder = holder;
         }
