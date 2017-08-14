@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc: 对AsyncTask进行的封装，如果你的任务的参数一样，可以只设置一个Listener，用mTaskTag来区分
  */
-public class ExAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
 
     private Object mTaskTag;
     private OnLoadListener<Params, Progress, Result> mListener;

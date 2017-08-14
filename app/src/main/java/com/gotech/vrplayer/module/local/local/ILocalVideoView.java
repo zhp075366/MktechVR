@@ -1,5 +1,7 @@
 package com.gotech.vrplayer.module.local.local;
 
+import android.graphics.Bitmap;
+
 import com.gotech.vrplayer.base.IBaseView;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
 
@@ -14,4 +16,5 @@ public interface ILocalVideoView extends IBaseView {
 
     void showLocalVideo(List<LocalVideoBean> data);
 
+    void setThumbnail(int position, Bitmap bitmap);
 }

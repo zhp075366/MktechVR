@@ -13,8 +13,8 @@
 
     <ImageView
         android:id="@+id/iv_thumbnail"
-        android:layout_width="120dp"
-        android:layout_height="80dp"
+        android:layout_width="@dimen/local_video_thumbnail_width"
+        android:layout_height="@dimen/local_video_thumbnail_height"
         android:src="@mipmap/ic_local_video_default"
         android:scaleType="centerCrop"/>
 

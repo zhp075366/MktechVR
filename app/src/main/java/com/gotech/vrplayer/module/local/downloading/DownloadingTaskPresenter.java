@@ -3,7 +3,7 @@ package com.gotech.vrplayer.module.local.downloading;
 import android.content.Context;
 
 import com.gotech.vrplayer.module.local.DownloadVideoManager;
-import com.gotech.vrplayer.utils.ExAsyncTask;
+import com.gotech.vrplayer.utils.AsyncTaskWrapper;
 import com.lzy.okserver.download.DownloadTask;
 import com.socks.library.KLog;
 
@@ -19,8 +19,8 @@ public class DownloadingTaskPresenter {
     private Context mContext;
     private IDownloadingTaskView mView;
     private DownloadVideoManager mDownloadVideoManager;
-    private ExAsyncTask<Void, Void, List<DownloadTask>> mTask;
-    private ExAsyncTask.OnLoadListener mLoadDBListener;
+    private AsyncTaskWrapper<Void, Void, List<DownloadTask>> mTask;
+    private AsyncTaskWrapper.OnLoadListener mLoadDBListener;
 
     public DownloadingTaskPresenter(Context context, IDownloadingTaskView view) {
         mView = view;
@@ -53,13 +53,13 @@ public class DownloadingTaskPresenter {
 
     public void restoreDownloadingTasks() {
         // 改为异步调用
-        mTask = new ExAsyncTask<>();
+        mTask = new AsyncTaskWrapper<>();
         mTask.setOnLoadListener(mLoadDBListener);
-        mTask.executeOnExecutor(ExAsyncTask.THREAD_POOL_CACHED);
+        mTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 
     private void initLoadDBListener() {
-        mLoadDBListener = new ExAsyncTask.OnLoadListener<Void, Void, List<DownloadTask>>() {
+        mLoadDBListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, List<DownloadTask>>() {
             @Override
             public void onStart(Object taskTag) {
                 mView.showLoading();

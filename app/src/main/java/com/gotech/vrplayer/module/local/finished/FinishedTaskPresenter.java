@@ -3,7 +3,7 @@ package com.gotech.vrplayer.module.local.finished;
 import android.content.Context;
 
 import com.gotech.vrplayer.module.local.DownloadVideoManager;
-import com.gotech.vrplayer.utils.ExAsyncTask;
+import com.gotech.vrplayer.utils.AsyncTaskWrapper;
 import com.lzy.okgo.model.Progress;
 import com.socks.library.KLog;
 
@@ -19,8 +19,8 @@ public class FinishedTaskPresenter {
     private Context mContext;
     private IFinishedTaskView mView;
     private DownloadVideoManager mDownloadVideoManager;
-    private ExAsyncTask<Void, Void, List<Progress>> mTask;
-    private ExAsyncTask.OnLoadListener mLoadDBListener;
+    private AsyncTaskWrapper<Void, Void, List<Progress>> mTask;
+    private AsyncTaskWrapper.OnLoadListener mLoadDBListener;
 
     public FinishedTaskPresenter(Context context, IFinishedTaskView view) {
         mView = view;
@@ -37,13 +37,13 @@ public class FinishedTaskPresenter {
 
     public void getFinishedTasks() {
         // 改为异步调用
-        mTask = new ExAsyncTask<>();
+        mTask = new AsyncTaskWrapper<>();
         mTask.setOnLoadListener(mLoadDBListener);
-        mTask.executeOnExecutor(ExAsyncTask.THREAD_POOL_CACHED);
+        mTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 
     private void initLoadDBListener() {
-        mLoadDBListener = new ExAsyncTask.OnLoadListener<Void, Void, List<Progress>>() {
+        mLoadDBListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, List<Progress>>() {
             @Override
             public void onStart(Object taskTag) {
                 mView.showLoading();

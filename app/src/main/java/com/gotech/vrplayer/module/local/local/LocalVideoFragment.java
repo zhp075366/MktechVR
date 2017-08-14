@@ -1,6 +1,7 @@
 package com.gotech.vrplayer.module.local.local;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,7 +17,6 @@ import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
 import com.gotech.vrplayer.utils.DensityUtil;
 import com.gotech.vrplayer.widget.SpecialLineDivider;
-import com.socks.library.KLog;
 
 import java.util.List;
 
@@ -41,6 +41,8 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     private boolean mIsInit;
     // 当前fragment view是否可见
     private boolean mIsVisible;
+    // 第一次加载数据是否成功
+    private boolean mHasFirstLoaded;
 
     public static LocalVideoFragment newInstance(String arg) {
         Bundle args = new Bundle();
@@ -108,7 +110,7 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     }
 
     private void lazyLoad() {
-        if (!mIsInit || !mIsVisible) {
+        if (!mIsInit || !mIsVisible || mHasFirstLoaded) {
             return;
         }
         mPresenter.getAllVideo();
@@ -116,11 +118,16 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
 
     @Override
     public void showLocalVideo(List<LocalVideoBean> data) {
-        KLog.i("showLocalVideo size=" + data.size());
+        mHasFirstLoaded = true;
         if (data.size() == 0) {
             return;
         }
-        mAdapter.setNewData(data);
+        mAdapter.setData(data);
+    }
+
+    @Override
+    public void setThumbnail(int position, Bitmap bitmap) {
+        mAdapter.setThumbnail(position, bitmap);
     }
 
     private void initRecyclerView() {
@@ -130,7 +137,7 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
         SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
-        mAdapter = new LocalVideoAdapter();
+        mAdapter = new LocalVideoAdapter(mPresenter);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(itemDecoration);

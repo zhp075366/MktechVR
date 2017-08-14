@@ -31,4 +31,7 @@
     <dimen name="local_list_height">75dp</dimen>
     <dimen name="local_list_width">100dp</dimen>
 
+    <dimen name="local_video_thumbnail_width">120dp</dimen>
+    <dimen name="local_video_thumbnail_height">80dp</dimen>
+
 </resources>

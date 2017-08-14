@@ -1,5 +1,7 @@
 package com.gotech.vrplayer.model;
 
+import android.graphics.Bitmap;
+
 import com.gotech.vrplayer.model.bean.LocalVideoBean;
 
 import java.util.List;
@@ -13,4 +15,5 @@ public interface ILocalVideoModel {
 
     List<LocalVideoBean> getLocalVideoData();
 
+    Bitmap getVideoThumbnail(String videoPath, int width, int height, int kind);
 }

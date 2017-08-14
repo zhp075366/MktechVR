@@ -31,8 +31,7 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter>
-        implements IVideoChannelView, BaseQuickAdapter.RequestLoadMoreListener {
+public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> implements IVideoChannelView, BaseQuickAdapter.RequestLoadMoreListener {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -74,8 +73,8 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter>
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mIsInit = true;
         initRecyclerView();
+        mIsInit = true;
         lazyLoad();
     }
 

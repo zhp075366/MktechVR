@@ -2,6 +2,8 @@ package com.gotech.vrplayer.model.impl;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
 
 import com.gotech.vrplayer.model.ILocalVideoModel;
@@ -53,5 +55,13 @@ public class LocalVideoModelImpl implements ILocalVideoModel {
         }
         cursor.close();
         return videoList;
+    }
+
+    @Override
+    public Bitmap getVideoThumbnail(String videoPath, int width, int height, int kind) {
+        Bitmap bitmap;
+        bitmap = ThumbnailUtils.createVideoThumbnail(videoPath, kind);
+        bitmap = ThumbnailUtils.extractThumbnail(bitmap, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        return bitmap;
     }
 }
