@@ -75,7 +75,7 @@ public class LocalFragment extends BaseFragment {
 
     private void initTabLayout() {
         List<Fragment> childFragments = new ArrayList<>();
-        String[] strTitle = getActivity().getResources().getStringArray(R.array.local_video_title);
+        String[] strTitle = getActivity().getResources().getStringArray(R.array.local_title);
         mTabLayout.setTabMode(TabLayout.MODE_FIXED);
         mTabLayout.addTab(mTabLayout.newTab().setText(strTitle[0]));
         mTabLayout.addTab(mTabLayout.newTab().setText(strTitle[1]));

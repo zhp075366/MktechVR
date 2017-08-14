@@ -32,7 +32,7 @@
         <item>fragment12</item>
     </string-array>
 
-    <string-array name="local_video_title">
+    <string-array name="local_title">
         <item>下载中</item>
         <item>已下载</item>
         <item>本地视频</item>
