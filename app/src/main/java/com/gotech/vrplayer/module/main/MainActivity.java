@@ -118,7 +118,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements
     private void initNavigationBar() {
         mBottomNavigationBar.setMode(BottomNavigationBar.MODE_FIXED);
         mBottomNavigationBar.setBackgroundStyle(BottomNavigationBar.BACKGROUND_STYLE_STATIC);
-        BottomNavigationItem homeItem = new BottomNavigationItem(R.mipmap.ic_main_bottom1, "首页");
+        BottomNavigationItem homeItem = new BottomNavigationItem(R.mipmap.ic_main_bottom1, "精选");
         BottomNavigationItem videoItem = new BottomNavigationItem(R.mipmap.ic_main_bottom2, "视频");
         BottomNavigationItem localItem = new BottomNavigationItem(R.mipmap.ic_main_bottom3, "本地");
         BottomNavigationItem personalItem = new BottomNavigationItem(R.mipmap.ic_main_bottom4, "我的");
