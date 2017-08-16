@@ -19,21 +19,30 @@ import com.squareup.leakcanary.LeakCanary;
 public class VRApplication extends Application {
 
     private DaoSession mDaoSession;
-    private static VRApplication application;
+    private static VRApplication mApp;
     private static final String GLOBAL_TAG = "gotech";
 
     @Override
     public void onCreate() {
         super.onCreate();
-        application = this;
+        mApp = this;
         initDataBase();
-        LeakCanary.install(this);
+        initLeakCanary();
         KLog.init(true, GLOBAL_TAG);
         OkGo.getInstance().init(this);
     }
 
     public static VRApplication getApplication() {
-        return application;
+        return mApp;
+    }
+
+    private void initLeakCanary() {
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            // This process is dedicated to LeakCanary for heap analysis.
+            // You should not init your app in this process.
+            return;
+        }
+        LeakCanary.install(this);
     }
 
     /**
