@@ -54,7 +54,7 @@ public class DownloadingTaskPresenter {
     public void restoreDownloadingTasks() {
         // 改为异步调用
         mTask = new AsyncTaskWrapper<>();
-        mTask.setOnLoadListener(mLoadDBListener);
+        mTask.setOnTaskListener(mLoadDBListener);
         mTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 

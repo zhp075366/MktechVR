@@ -27,10 +27,12 @@ public class LocalVideoPresenter {
     private ILocalVideoView mView;
     private ILocalVideoModel mModel;
     private int mWidth, mHeight;
+    // 加载视频缩略图任务
+    private AsyncTaskWrapper[] mThumbnailTasks;
+    private AsyncTaskWrapper.OnLoadListener<String, Void, Bitmap> mLoadThumbnailListener;
     // 加载所有视频任务
     private AsyncTaskWrapper<Void, Void, List<LocalVideoBean>> mLoadVideoTask;
-    // 加载视频缩略图任务
-    private ThumbnailAsyncTask[] mThumbnailTasks;
+    private AsyncTaskWrapper.OnLoadListener<Void, Void, List<LocalVideoBean>> mLoadVideoListener;
 
     public LocalVideoPresenter(Context context, ILocalVideoView view) {
         mContext = context;
@@ -48,7 +50,7 @@ public class LocalVideoPresenter {
         if (mThumbnailTasks == null) {
             return;
         }
-        for (ThumbnailAsyncTask task : mThumbnailTasks) {
+        for (AsyncTaskWrapper task : mThumbnailTasks) {
             if (task != null) {
                 task.cancle();
             }
@@ -56,8 +58,9 @@ public class LocalVideoPresenter {
     }
 
     public void getAllVideo() {
+        initLoadVideoListener();
         mLoadVideoTask = new AsyncTaskWrapper<>();
-        mLoadVideoTask.setOnLoadListener(mLoadVideoListener);
+        mLoadVideoTask.setOnTaskListener(mLoadVideoListener);
         mLoadVideoTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 
@@ -65,79 +68,76 @@ public class LocalVideoPresenter {
         if (mThumbnailTasks[position] != null) {
             return;
         }
-        ThumbnailAsyncTask task = new ThumbnailAsyncTask(position);
+        AsyncTaskWrapper<String, Void, Bitmap> task = new AsyncTaskWrapper<>();
+        task.setTaskTag(position);
+        task.setOnTaskListener(mLoadThumbnailListener);
+        task.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_EXECUTOR, videoPath);
         mThumbnailTasks[position] = task;
-        mThumbnailTasks[position].executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_EXECUTOR, videoPath);
     }
 
-    public void initThumbnailTask(int size) {
-        mThumbnailTasks = new ThumbnailAsyncTask[size];
+    public void initLoadThumbnailTask(int size) {
+        initLoadThumbnailListener();
+        mThumbnailTasks = new AsyncTaskWrapper[size];
     }
 
+    private void initLoadVideoListener() {
+        mLoadVideoListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, List<LocalVideoBean>>() {
+            @Override
+            public void onStart(Object taskTag) {
+                mView.showLoading();
+            }
 
-    private AsyncTaskWrapper.OnLoadListener mLoadVideoListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, List<LocalVideoBean>>() {
-        @Override
-        public void onStart(Object taskTag) {
-            mView.showLoading();
-        }
+            @Override
+            public void onCancel(Object taskTag) {
 
-        @Override
-        public void onCancel(Object taskTag) {
+            }
 
-        }
+            @Override
+            public void onResult(Object taskTag, List<LocalVideoBean> localVideoBeen) {
+                KLog.i("loadVideo onResult");
+                mView.hideLoading();
+                mView.showLocalVideo(localVideoBeen);
+            }
 
-        @Override
-        public void onResult(Object taskTag, List<LocalVideoBean> localVideoBeen) {
-            KLog.i("loadVideo onResult");
-            mView.hideLoading();
-            mView.showLocalVideo(localVideoBeen);
-        }
+            @Override
+            public void onProgress(Object taskTag, Void values) {
 
-        @Override
-        public void onProgress(Object taskTag, Void values) {
+            }
 
-        }
+            @Override
+            public List<LocalVideoBean> onWorkerThread(Object taskTag, Void... params) {
+                return mModel.getLocalVideoData();
+            }
+        };
+    }
 
-        @Override
-        public List<LocalVideoBean> onWorkerThread(Object taskTag, Void... params) {
-            return mModel.getLocalVideoData();
-        }
-    };
+    private void initLoadThumbnailListener() {
+        mLoadThumbnailListener = new AsyncTaskWrapper.OnLoadListener<String, Void, Bitmap>() {
+            @Override
+            public void onStart(Object taskTag) {
+                KLog.i("Thumbnail onStart->" + taskTag);
+            }
 
-    private AsyncTaskWrapper.OnLoadListener mThumbnailListener = new AsyncTaskWrapper.OnLoadListener<String, Void, Bitmap>() {
-        @Override
-        public void onStart(Object taskTag) {
-            KLog.i("Thumbnail onStart->" + taskTag);
-        }
+            @Override
+            public void onCancel(Object taskTag) {
+                KLog.i("Thumbnail onCancel->" + taskTag);
+            }
 
-        @Override
-        public void onCancel(Object taskTag) {
-            KLog.i("Thumbnail onCancel->" + taskTag);
-        }
+            @Override
+            public void onResult(Object taskTag, Bitmap bitmap) {
+                KLog.i("Thumbnail onResult->" + taskTag);
+                mView.setThumbnail((int)taskTag, bitmap);
+            }
 
-        @Override
-        public void onResult(Object taskTag, Bitmap bitmap) {
-            KLog.i("Thumbnail onResult->" + taskTag);
-            mView.setThumbnail((int)taskTag, bitmap);
-        }
+            @Override
+            public void onProgress(Object taskTag, Void values) {
 
-        @Override
-        public void onProgress(Object taskTag, Void values) {
+            }
 
-        }
-
-        @Override
-        public Bitmap onWorkerThread(Object taskTag, String... params) {
-            return mModel.getVideoThumbnail(params[0], mWidth, mHeight, MediaStore.Video.Thumbnails.MINI_KIND);
-        }
-    };
-
-    private class ThumbnailAsyncTask extends AsyncTaskWrapper<String, Void, Bitmap> {
-
-        public ThumbnailAsyncTask(int position) {
-            super.setTaskTag(position);
-            super.setOnLoadListener(mThumbnailListener);
-        }
-
+            @Override
+            public Bitmap onWorkerThread(Object taskTag, String... params) {
+                return mModel.getVideoThumbnail(params[0], mWidth, mHeight, MediaStore.Video.Thumbnails.MINI_KIND);
+            }
+        };
     }
 }

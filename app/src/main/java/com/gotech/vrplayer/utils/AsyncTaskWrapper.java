@@ -17,11 +17,11 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
     public static final Executor THREAD_POOL_CACHED = Executors.newCachedThreadPool();
     public static final Executor THREAD_POOL_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
 
-    protected void setTaskTag(Object taskTag) {
+    public void setTaskTag(Object taskTag) {
         mTaskTag = taskTag;
     }
 
-    public void setOnLoadListener(OnLoadListener listener) {
+    public void setOnTaskListener(OnLoadListener<Params, Progress, Result> listener) {
         mListener = listener;
     }
 

@@ -27,9 +27,9 @@ public class LocalVideoAdapter extends BaseQuickAdapter<LocalVideoBean, BaseView
     }
 
     public void setData(List<LocalVideoBean> data) {
-        super.setNewData(data);
         mThumbnailBitmaps = new Bitmap[data.size()];
-        mPresenter.initThumbnailTask(data.size());
+        mPresenter.initLoadThumbnailTask(data.size());
+        super.setNewData(data);
     }
 
     public void setThumbnail(int position, Bitmap bitmap) {
