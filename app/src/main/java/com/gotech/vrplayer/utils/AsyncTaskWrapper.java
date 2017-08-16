@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
  * Desc: 对AsyncTask进行的封装
  * 如果你的任务参数一样，可以只设置一个Listener，用mTaskTag来区分
  */
-@SuppressWarnings({"unchecked", "varargs"})
+@SuppressWarnings({"unchecked"})
 public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
 
     private Object mTaskTag;

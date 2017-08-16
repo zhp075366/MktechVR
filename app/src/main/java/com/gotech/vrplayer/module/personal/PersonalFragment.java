@@ -6,12 +6,9 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
-
-import butterknife.BindView;
 
 /**
  * Author: ZouHaiping on 2017/6/27
@@ -20,8 +17,6 @@ import butterknife.BindView;
  */
 public class PersonalFragment extends BaseFragment<PersonalPresenter> implements IPersonalView {
 
-    @BindView(R.id.text_view_text)
-    TextView mTextView;
     private Context mContext;
 
     public static PersonalFragment newInstance(String arg) {
@@ -46,8 +41,6 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        String arg = getArguments().getString("ARGS");
-        mTextView.setText(arg);
     }
 
     @Override
