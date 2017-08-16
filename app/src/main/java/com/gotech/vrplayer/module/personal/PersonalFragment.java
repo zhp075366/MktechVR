@@ -6,9 +6,13 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
+
+import butterknife.BindView;
 
 /**
  * Author: ZouHaiping on 2017/6/27
@@ -16,6 +20,15 @@ import com.gotech.vrplayer.base.BaseFragment;
  * Desc:
  */
 public class PersonalFragment extends BaseFragment<PersonalPresenter> implements IPersonalView {
+
+    @BindView(R.id.tv_app_version)
+    TextView mTvAppVersion;
+    @BindView(R.id.check_update)
+    RelativeLayout mCheckUpdate;
+    @BindView(R.id.help)
+    RelativeLayout mHelp;
+    @BindView(R.id.feedback_advice)
+    RelativeLayout mFeedbackAdvice;
 
     private Context mContext;
 
@@ -40,7 +53,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        showVersionName();
     }
 
     @Override
@@ -57,5 +70,10 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     protected void createPresenter() {
         mContext = getContext();
         mPresenter = new PersonalPresenter(mContext, this);
+    }
+
+    private void showVersionName() {
+        String appVersion = mPresenter.getVersionName();
+        mTvAppVersion.setText(appVersion);
     }
 }

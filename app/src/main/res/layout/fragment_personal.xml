@@ -48,7 +48,7 @@
         <RelativeLayout
             android:id="@+id/check_update"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="50dp"
             android:background="@drawable/selector_common_item_background"
             android:clickable="true"
             android:foreground="?android:attr/selectableItemBackground">
@@ -80,7 +80,7 @@
         <RelativeLayout
             android:id="@+id/help"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="50dp"
             android:background="@drawable/selector_common_item_background"
             android:clickable="true"
             android:foreground="?android:attr/selectableItemBackground">
@@ -113,7 +113,7 @@
         <RelativeLayout
             android:id="@+id/feedback_advice"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="50dp"
             android:background="@drawable/selector_common_item_background"
             android:clickable="true"
             android:foreground="?android:attr/selectableItemBackground">

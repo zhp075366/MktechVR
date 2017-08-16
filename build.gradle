@@ -23,3 +23,26 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext {
+    compileSdkVersion = 25
+    buildToolsVersion = "25.0.3"
+
+    minSdkVersion = 14
+    targetSdkVersion = 25
+
+    versionCode = 1
+    versionNamePrefix = "1.0.1"
+    versionDate = getDate()
+    versionName = getVersionName()
+}
+
+def getVersionName() {
+    return "V" + project.versionNamePrefix + "_" + project.versionDate;
+}
+
+def static getDate() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMdd')
+    return formattedDate
+}
