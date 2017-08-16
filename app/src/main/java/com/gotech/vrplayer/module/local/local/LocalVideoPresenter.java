@@ -23,18 +23,22 @@ import java.util.List;
 public class LocalVideoPresenter {
 
     private Context mContext;
+    private Resources mResources;
     private ILocalVideoView mView;
     private ILocalVideoModel mModel;
-    private AsyncTaskWrapper.OnLoadListener mLoadVideoListener;
+    private int mWidth, mHeight;
+    // 加载所有视频任务
     private AsyncTaskWrapper<Void, Void, List<LocalVideoBean>> mLoadVideoTask;
-    // 视频缩略图加载任务
+    // 加载视频缩略图任务
     private ThumbnailAsyncTask[] mThumbnailTasks;
 
     public LocalVideoPresenter(Context context, ILocalVideoView view) {
         mContext = context;
+        mResources = mContext.getResources();
         mView = view;
         mModel = new LocalVideoModelImpl(mContext);
-        initLoadVideoListener();
+        mWidth = (int)DensityUtil.dp2Px(mContext, mResources.getDimension(R.dimen.local_video_thumbnail_width));
+        mHeight = (int)DensityUtil.dp2Px(mContext, mResources.getDimension(R.dimen.local_video_thumbnail_height));
     }
 
     public void destroyPresenter() {
@@ -61,90 +65,79 @@ public class LocalVideoPresenter {
         if (mThumbnailTasks[position] != null) {
             return;
         }
-        ThumbnailAsyncTask task = new ThumbnailAsyncTask(position, videoPath);
+        ThumbnailAsyncTask task = new ThumbnailAsyncTask(position);
         mThumbnailTasks[position] = task;
-        mThumbnailTasks[position].executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_EXECUTOR);
+        mThumbnailTasks[position].executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_EXECUTOR, videoPath);
     }
 
     public void initThumbnailTask(int size) {
         mThumbnailTasks = new ThumbnailAsyncTask[size];
     }
 
-    private void initLoadVideoListener() {
-        mLoadVideoListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, List<LocalVideoBean>>() {
-            @Override
-            public void onStart(Object taskTag) {
-                mView.showLoading();
-            }
 
-            @Override
-            public void onCancel(Object taskTag) {
+    private AsyncTaskWrapper.OnLoadListener mLoadVideoListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, List<LocalVideoBean>>() {
+        @Override
+        public void onStart(Object taskTag) {
+            mView.showLoading();
+        }
 
-            }
+        @Override
+        public void onCancel(Object taskTag) {
 
-            @Override
-            public void onResult(Object taskTag, List<LocalVideoBean> localVideoBeen) {
-                KLog.i("loadVideo onResult");
-                mView.hideLoading();
-                mView.showLocalVideo(localVideoBeen);
-            }
+        }
 
-            @Override
-            public void onProgress(Object taskTag, Void values) {
+        @Override
+        public void onResult(Object taskTag, List<LocalVideoBean> localVideoBeen) {
+            KLog.i("loadVideo onResult");
+            mView.hideLoading();
+            mView.showLocalVideo(localVideoBeen);
+        }
 
-            }
+        @Override
+        public void onProgress(Object taskTag, Void values) {
 
-            @Override
-            public List<LocalVideoBean> onWorkerThread(Object taskTag, Void... params) {
-                return mModel.getLocalVideoData();
-            }
-        };
-    }
+        }
 
-    private class ThumbnailAsyncTask extends AsyncTaskWrapper<Void, Void, Bitmap> {
+        @Override
+        public List<LocalVideoBean> onWorkerThread(Object taskTag, Void... params) {
+            return mModel.getLocalVideoData();
+        }
+    };
 
-        private String mVideoPath;
-        private int mWidth, mHeight;
-        private Resources mResources = mContext.getResources();
-        private AsyncTaskWrapper.OnLoadListener mThumbnailListener;
+    private AsyncTaskWrapper.OnLoadListener mThumbnailListener = new AsyncTaskWrapper.OnLoadListener<String, Void, Bitmap>() {
+        @Override
+        public void onStart(Object taskTag) {
+            KLog.i("Thumbnail onStart->" + taskTag);
+        }
 
-        public ThumbnailAsyncTask(int position, String videoPath) {
-            initThumbnailListener();
+        @Override
+        public void onCancel(Object taskTag) {
+            KLog.i("Thumbnail onCancel->" + taskTag);
+        }
+
+        @Override
+        public void onResult(Object taskTag, Bitmap bitmap) {
+            KLog.i("Thumbnail onResult->" + taskTag);
+            mView.setThumbnail((int)taskTag, bitmap);
+        }
+
+        @Override
+        public void onProgress(Object taskTag, Void values) {
+
+        }
+
+        @Override
+        public Bitmap onWorkerThread(Object taskTag, String... params) {
+            return mModel.getVideoThumbnail(params[0], mWidth, mHeight, MediaStore.Video.Thumbnails.MINI_KIND);
+        }
+    };
+
+    private class ThumbnailAsyncTask extends AsyncTaskWrapper<String, Void, Bitmap> {
+
+        public ThumbnailAsyncTask(int position) {
             super.setTaskTag(position);
             super.setOnLoadListener(mThumbnailListener);
-            mVideoPath = videoPath;
-            mWidth = (int)DensityUtil.dp2Px(mContext, mResources.getDimension(R.dimen.local_video_thumbnail_width));
-            mHeight = (int)DensityUtil.dp2Px(mContext, mResources.getDimension(R.dimen.local_video_thumbnail_height));
         }
 
-        private void initThumbnailListener() {
-            mThumbnailListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, Bitmap>() {
-                @Override
-                public void onStart(Object taskTag) {
-                    KLog.i("onStart->" + taskTag);
-                }
-
-                @Override
-                public void onCancel(Object taskTag) {
-                    KLog.i("onCancel->" + taskTag);
-                }
-
-                @Override
-                public void onResult(Object taskTag, Bitmap bitmap) {
-                    KLog.i("onResult->" + taskTag);
-                    mView.setThumbnail((int)taskTag, bitmap);
-                }
-
-                @Override
-                public void onProgress(Object taskTag, Void values) {
-
-                }
-
-                @Override
-                public Bitmap onWorkerThread(Object taskTag, Void... params) {
-                    return mModel.getVideoThumbnail(mVideoPath, mWidth, mHeight, MediaStore.Video.Thumbnails.MINI_KIND);
-                }
-            };
-        }
     }
 }

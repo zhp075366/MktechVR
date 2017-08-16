@@ -232,4 +232,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements
             }
         }
     }
+
+    public VrActionBar getVrActionBar() {
+        return mVrActionBar;
+    }
 }

@@ -17,7 +17,7 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
     public static final Executor THREAD_POOL_CACHED = Executors.newCachedThreadPool();
     public static final Executor THREAD_POOL_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
 
-    public void setTaskTag(Object taskTag) {
+    protected void setTaskTag(Object taskTag) {
         mTaskTag = taskTag;
     }
 
