@@ -140,7 +140,7 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 // 此position不包括header和footer,和data list保持一致
                 KLog.i("onItemClick position=" + position + " " + data.get(position).getPath());
-                VrPlayerActivity.startVrPlayerActivity(mContext, data.get(position).getPath());
+                //VrPlayerActivity.startVrPlayerActivity(mContext, data.get(position).getPath());
             }
         });
     }
