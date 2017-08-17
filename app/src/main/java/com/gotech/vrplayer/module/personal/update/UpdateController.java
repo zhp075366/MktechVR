@@ -145,7 +145,7 @@ public class UpdateController implements OnClickListener {
                 if (mDialog.isShowing()) {
                     mDialog.dismiss();
                     if (mUpdateService != null) {
-                        mUpdateService.setServiceState(UpdateService.UPDATE_SERVICE_STATE.INVALID);
+                        mUpdateService.setServiceState(UpdateService.UPDATE_SERVICE_STATE.IDLE);
                     }
                 }
                 break;

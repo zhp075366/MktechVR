@@ -28,7 +28,7 @@ public class UpdateService extends Service {
     private Resources mResources;
     private CheckUpdateThread mCheckThread;
     private DownloadUpdateThread mDownloadThread;
-    private UPDATE_SERVICE_STATE mServiceState = UPDATE_SERVICE_STATE.INVALID;
+    private UPDATE_SERVICE_STATE mServiceState = UPDATE_SERVICE_STATE.IDLE;
     private UpdateServiceBinder mUpdateServiceBinder = new UpdateServiceBinder();
 
     // 更新服务器信息
@@ -42,7 +42,7 @@ public class UpdateService extends Service {
     private NotificationManager m_NotificationManager;
 
     public enum UPDATE_SERVICE_STATE {
-        INVALID, CHECKING, DOWNLOADINIG
+        IDLE, CHECKING, DOWNLOADINIG
     }
 
     @Override
@@ -61,7 +61,7 @@ public class UpdateService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         KLog.i("updateService onStart");
-        mServiceState = UPDATE_SERVICE_STATE.INVALID;
+        mServiceState = UPDATE_SERVICE_STATE.IDLE;
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -184,16 +184,10 @@ public class UpdateService extends Service {
     }
 
     private UpdateCallback mUpdateListener = new UpdateCallback() {
+
         @Override
-        public void onDownloadUpdateSuccess() {
-            KLog.i("onDownloadUpdateSuccess");
-            m_NotificationManager.cancel(0);
-            mServiceState = UPDATE_SERVICE_STATE.INVALID;
-            DownloadUpdateThread.DownloadUpdateMsg downloadMsg = new DownloadUpdateThread.DownloadUpdateMsg();
-            downloadMsg.strDownloadResult = mResources.getString(R.string.update_success_msg);
-            downloadMsg.eResult = DownloadUpdateThread.DOWNLOAD_UPDATE_RESULT.SUCCESS;
-            sendDownloadResultMessage(MessageID.AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadMsg);
-            installPackage();
+        public void onCheckUpdateStart() {
+            mServiceState = UPDATE_SERVICE_STATE.CHECKING;
         }
 
         @Override
@@ -208,10 +202,16 @@ public class UpdateService extends Service {
         }
 
         @Override
+        public void onCheckUpdateComplete(CheckUpdateThread.CheckUpdateMsg updateMsg) {
+            mServiceState = UPDATE_SERVICE_STATE.IDLE;
+            sendCheckResultMessage(MessageID.AUTO_UPDATE_CHECKING_COMPLETE, updateMsg);
+        }
+
+        @Override
         public void onDownloadUpdateFail() {
             KLog.e("onDownloadUpdateFail");
             m_NotificationManager.cancel(0);
-            mServiceState = UPDATE_SERVICE_STATE.INVALID;
+            mServiceState = UPDATE_SERVICE_STATE.IDLE;
             DownloadUpdateThread.DownloadUpdateMsg downloadMsg = new DownloadUpdateThread.DownloadUpdateMsg();
             downloadMsg.strDownloadResult = mResources.getString(R.string.update_failed_msg);
             downloadMsg.eResult = DownloadUpdateThread.DOWNLOAD_UPDATE_RESULT.FAIL;
@@ -219,13 +219,15 @@ public class UpdateService extends Service {
         }
 
         @Override
-        public void onCheckUpdateStart() {
-            mServiceState = UPDATE_SERVICE_STATE.CHECKING;
-        }
-
-        @Override
-        public void onCheckUpdateComplete(CheckUpdateThread.CheckUpdateMsg updateMsg) {
-            sendCheckResultMessage(MessageID.AUTO_UPDATE_CHECKING_COMPLETE, updateMsg);
+        public void onDownloadUpdateSuccess() {
+            KLog.i("onDownloadUpdateSuccess");
+            m_NotificationManager.cancel(0);
+            mServiceState = UPDATE_SERVICE_STATE.IDLE;
+            DownloadUpdateThread.DownloadUpdateMsg downloadMsg = new DownloadUpdateThread.DownloadUpdateMsg();
+            downloadMsg.strDownloadResult = mResources.getString(R.string.update_success_msg);
+            downloadMsg.eResult = DownloadUpdateThread.DOWNLOAD_UPDATE_RESULT.SUCCESS;
+            sendDownloadResultMessage(MessageID.AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadMsg);
+            installPackage();
         }
     };
 }

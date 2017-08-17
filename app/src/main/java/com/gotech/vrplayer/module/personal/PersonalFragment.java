@@ -1,6 +1,5 @@
 package com.gotech.vrplayer.module.personal;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -107,14 +106,9 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
             ToastUtil.showToast(mContext, R.string.no_network_connect, Toast.LENGTH_SHORT);
             return;
         }
-        if (mUpdateService == null) {
-            KLog.e("mUpdateService == null");
-            return;
-        }
-
         UpdateService.UPDATE_SERVICE_STATE eState = mUpdateService.getServiceState();
         if (eState == UpdateService.UPDATE_SERVICE_STATE.CHECKING) {
-            KLog.i("UPDATE_SERVICE_STATE.CHECKING");
+            ToastUtil.showToast(mContext, R.string.update_checking, Toast.LENGTH_SHORT);
             return;
         } else if (eState == UpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
             ToastUtil.showToast(mContext, R.string.update_downloading, Toast.LENGTH_SHORT);
@@ -147,11 +141,10 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
                 case MessageID.AUTO_UPDATE_SERVICE_CONNECTED:
                     mUpdateService = mUpdateController.getUpdateServiceInstance();
                     break;
-
                 case MessageID.AUTO_UPDATE_SERVICE_DISCONNECTED:
+                    KLog.e("AUTO_UPDATE_SERVICE_DISCONNECTED");
                     mUpdateService = null;
                     break;
-
                 case MessageID.AUTO_UPDATE_CHECKING_COMPLETE:
                     if (mCheckingDialog != null && mCheckingDialog.isShowing()) {
                         mCheckingDialog.dismiss();
@@ -170,13 +163,9 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
                         ToastUtil.showToast(mContext, R.string.update_check_exception, Toast.LENGTH_SHORT);
                     }
                     break;
-
                 case MessageID.AUTO_UPDATE_DOWNLOADING_COMPLETE:
                     DownloadUpdateThread.DownloadUpdateMsg downloadMsg = (DownloadUpdateThread.DownloadUpdateMsg)msg.obj;
                     ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
-                    break;
-
-                default:
                     break;
             }
         }

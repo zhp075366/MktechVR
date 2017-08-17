@@ -44,7 +44,6 @@ public class CheckUpdateThread extends Thread {
         mUpdateListener.onCheckUpdateStart();
         CheckUpdateMsg resultMsg = new CheckUpdateMsg();
         resultMsg.strCheckResult = null;
-        resultMsg.eResult = CHECK_UPDATE_RESULT.EXCEPTION;
         try {
             PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
             int nCurVersionCode = packageInfo.versionCode;
@@ -77,6 +76,7 @@ public class CheckUpdateThread extends Thread {
             KLog.e("CheckUpdate ConnectTimeoutException");
         } catch (Exception e) {
             e.printStackTrace();
+            resultMsg.eResult = CHECK_UPDATE_RESULT.EXCEPTION;
             KLog.e("CheckUpdate OtherException");
         }
         mUpdateListener.onCheckUpdateComplete(resultMsg);
