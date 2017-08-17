@@ -21,7 +21,6 @@ import com.gotech.vrplayer.module.personal.update.UpdateService;
 import com.gotech.vrplayer.utils.NetworkUtil;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.CustomDialog;
-import com.socks.library.KLog;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -44,10 +43,9 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
 
     private Context mContext;
     private Resources mResources;
-
-    // 自更新Service
     private CustomDialog mCheckingDialog;
-    private UpdateService mUpdateService;
+
+    // APK更新管理器
     private UpdateManager mUpdateManager;
 
     public static PersonalFragment newInstance(String arg) {
@@ -72,16 +70,16 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         showVersionName();
-        initUpdateService();
+        initUpdateManager();
     }
 
     @Override
     public void onDestroyView() {
-        if (mUpdateService != null) {
-            mUpdateService.setExternalHandler(null);
+        if (mUpdateManager != null) {
+            mUpdateManager.setUIHandler(null);
             mUpdateManager.unbindUpdateService();
         }
-        mAutoUpdateHandler.removeCallbacksAndMessages(null);
+        mUIHandler.removeCallbacksAndMessages(null);
         super.onDestroyView();
     }
 
@@ -103,7 +101,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
             ToastUtil.showToast(mContext, R.string.no_network_connect, Toast.LENGTH_SHORT);
             return;
         }
-        UpdateService.UPDATE_SERVICE_STATE eState = mUpdateService.getServiceState();
+        UpdateService.UPDATE_SERVICE_STATE eState = mUpdateManager.getServiceState();
         if (eState == UpdateService.UPDATE_SERVICE_STATE.CHECKING) {
             ToastUtil.showToast(mContext, R.string.update_checking, Toast.LENGTH_SHORT);
             return;
@@ -114,8 +112,8 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
         mCheckingDialog = DialogCreater.showWaitingDialog(mContext, mResources.getString(R.string.update_check_tips));
         mCheckingDialog.show();
         // 此Handler用于Service检测更新/下载更新结果回调通知
-        mUpdateService.setExternalHandler(mAutoUpdateHandler);
-        mUpdateService.startCheckUpdate();
+        mUpdateManager.setUIHandler(mUIHandler);
+        mUpdateManager.checkUpdate();
     }
 
     private void showVersionName() {
@@ -123,25 +121,16 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
         mTvAppVersion.setText(appVersion);
     }
 
-    private void initUpdateService() {
+    private void initUpdateManager() {
         mUpdateManager = new UpdateManager(mContext);
-        // 此Handler用于Service连接回调通知
-        mUpdateManager.setExternalHandler(mAutoUpdateHandler);
         mUpdateManager.startUpdateServiceIfStoped();
         mUpdateManager.bindUpdateService();
     }
 
-    private Handler mAutoUpdateHandler = new Handler() {
+    private Handler mUIHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case UpdateService.AUTO_UPDATE_SERVICE_CONNECTED:
-                    mUpdateService = mUpdateManager.getUpdateServiceInstance();
-                    break;
-                case UpdateService.AUTO_UPDATE_SERVICE_DISCONNECTED:
-                    KLog.e("AUTO_UPDATE_SERVICE_DISCONNECTED");
-                    mUpdateService = null;
-                    break;
                 case UpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
                     if (mCheckingDialog != null && mCheckingDialog.isShowing()) {
                         mCheckingDialog.dismiss();

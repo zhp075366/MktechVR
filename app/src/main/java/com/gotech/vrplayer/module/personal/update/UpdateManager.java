@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,7 +21,6 @@ import com.socks.library.KLog;
 public class UpdateManager implements OnClickListener {
 
     private Context mContext;
-    private Handler mHandler;
     private Dialog mDialog;
     private Button mBtnOK;
     private Button mBtnCancel;
@@ -49,18 +47,6 @@ public class UpdateManager implements OnClickListener {
         mTextContent = (TextView)dialogView.findViewById(R.id.text_content);
     }
 
-    public void setExternalHandler(Handler handler) {
-        mHandler = handler;
-    }
-
-    public void sendMessage(int what) {
-        if (mHandler != null) {
-            Message msg = Message.obtain();
-            msg.what = what;
-            mHandler.sendMessage(msg);
-        }
-    }
-
     public void showUpdateDialog(String updateInfo) {
         mTextContent.setText(updateInfo);
         mBtnOK.setText(R.string.update_btnupdate);
@@ -76,8 +62,16 @@ public class UpdateManager implements OnClickListener {
         mAppSize = fileLength;
     }
 
-    public UpdateService getUpdateServiceInstance() {
-        return mUpdateService;
+    public UpdateService.UPDATE_SERVICE_STATE getServiceState() {
+        return mUpdateService.getServiceState();
+    }
+
+    public void setUIHandler(Handler handler) {
+        mUpdateService.setUIHandler(handler);
+    }
+
+    public void checkUpdate() {
+        mUpdateService.startCheckUpdate();
     }
 
     private ServiceConnection onUpdateServiceConnection = new ServiceConnection() {
@@ -85,14 +79,12 @@ public class UpdateManager implements OnClickListener {
         public void onServiceConnected(ComponentName name, IBinder binder) {
             KLog.i("updateService bind ok");
             mUpdateService = ((UpdateService.UpdateServiceBinder)binder).getService();
-            sendMessage(UpdateService.AUTO_UPDATE_SERVICE_CONNECTED);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             KLog.e("updateService bind error");
             mUpdateService = null;
-            sendMessage(UpdateService.AUTO_UPDATE_SERVICE_DISCONNECTED);
         }
     };
 
