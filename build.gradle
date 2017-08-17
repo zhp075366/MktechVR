@@ -38,7 +38,9 @@ ext {
 }
 
 def getVersionName() {
-    return "V" + project.versionNamePrefix + "_" + project.versionDate;
+    def version = "V" + project.versionNamePrefix + "_" + project.versionDate;
+    print(version);
+    return version;
 }
 
 def static getDate() {

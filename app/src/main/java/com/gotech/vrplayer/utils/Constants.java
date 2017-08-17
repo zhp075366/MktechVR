@@ -13,7 +13,7 @@ public class Constants {
     public static final int ONE_MB_SIZE = 1024 * 1024;
     public static final int ONE_GB_SIZE = 1024 * 1024 * 1024;
 
-    public static final DecimalFormat ONE_DECIMAL_FORMAT = new DecimalFormat("#.0");
-    public static final DecimalFormat TWO_DECIMAL_FORMAT = new DecimalFormat("#.00");
+    public static final DecimalFormat ONE_DECIMAL_FORMAT = new DecimalFormat("0.0");
+    public static final DecimalFormat TWO_DECIMAL_FORMAT = new DecimalFormat("0.00");
 
 }

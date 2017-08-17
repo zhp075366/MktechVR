@@ -29,4 +29,15 @@ public class NetworkUtil {
         }
         return wifiConnected;
     }
+
+    // 数据网络是否连接
+    public static boolean isMobileConnected(Context context) {
+        boolean mobileConnected = false;
+        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            mobileConnected = networkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+        }
+        return mobileConnected;
+    }
 }

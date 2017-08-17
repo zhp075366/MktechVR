@@ -10,12 +10,18 @@ public class MainPresenter {
     private MainActivity mActivity;
     private IMainView mView;
 
+    // 通过一个Manager来做
+
     public MainPresenter(MainActivity activity, IMainView view) {
         mView = view;
         mActivity = activity;
     }
 
-    public void checkUpdate() {
+    public void destroyPresenter() {
 
+    }
+
+    public void checkUpdate() {
+        
     }
 }

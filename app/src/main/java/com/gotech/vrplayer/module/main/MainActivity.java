@@ -17,8 +17,8 @@ import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseActivity;
 import com.gotech.vrplayer.module.home.HomeFragment;
 import com.gotech.vrplayer.module.local.LocalFragment;
-import com.gotech.vrplayer.module.video.VideoFragment;
 import com.gotech.vrplayer.module.personal.PersonalFragment;
+import com.gotech.vrplayer.module.video.VideoFragment;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.VrActionBar;
 import com.socks.library.KLog;
@@ -35,9 +35,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class MainActivity extends BaseActivity<MainPresenter> implements
-        BottomNavigationBar.OnTabSelectedListener, IMainView,
-        EasyPermissions.PermissionCallbacks, View.OnClickListener {
+public class MainActivity extends BaseActivity<MainPresenter> implements BottomNavigationBar.OnTabSelectedListener, IMainView, EasyPermissions.PermissionCallbacks, View.OnClickListener {
 
     @BindView(R.id.bottom_navigation_bar)
     BottomNavigationBar mBottomNavigationBar;
@@ -64,6 +62,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements
         initNavigationBar();
         requestPermissions();
         mVrActionBar.setOnRightButtonClickListner(this);
+        checkUpdate();
     }
 
     @Override
@@ -180,12 +179,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements
         // (Optional) Check whether the user denied any permissions and checked "NEVER ASK AGAIN."
         // This will display a dialog directing them to enable the permission in app settings.
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-            new AppSettingsDialog.Builder(this).setTitle(getString(R.string.permission_request_title))
-                    .setRationale(getString(R.string.permission_request_content))
-                    .setNegativeButton(getString(R.string.cancel))
-                    .setPositiveButton(getString(R.string.setting))
-                    .build()
-                    .show();
+            new AppSettingsDialog.Builder(this).setTitle(getString(R.string.permission_request_title)).setRationale(getString(R.string.permission_request_content)).setNegativeButton(getString(R.string.cancel)).setPositiveButton(getString(R.string.setting)).build().show();
         }
     }
 
@@ -214,6 +208,12 @@ public class MainActivity extends BaseActivity<MainPresenter> implements
             ToastUtil.cancelToast();
             this.finish();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mPresenter.destroyPresenter();
+        super.onDestroy();
     }
 
     private void checkUpdate() {
