@@ -19,7 +19,7 @@ import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.AppUtil;
 import com.socks.library.KLog;
 
-public class UpdateController implements OnClickListener {
+public class UpdateManager implements OnClickListener {
 
     private Context mContext;
     private Handler mHandler;
@@ -34,7 +34,7 @@ public class UpdateController implements OnClickListener {
     private int mAppSize;
     private String mAppMD5;
 
-    public UpdateController(Context context) {
+    public UpdateManager(Context context) {
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
     }
@@ -42,7 +42,7 @@ public class UpdateController implements OnClickListener {
     @SuppressLint("InflateParams")
     public void initDialogView() {
         View dialogView = mInflater.inflate(R.layout.dialog_update_tip, null);
-        mDialog = DialogCreater.showDownloadDialog(mContext, R.style.ExAlertDialog, dialogView);
+        mDialog = DialogCreater.showDownloadDialog(mContext, R.style.UpdateDialog, dialogView);
         mBtnOK = (Button)dialogView.findViewById(R.id.okButton);
         mBtnCancel = (Button)dialogView.findViewById(R.id.cancelButton);
         mTextTitle = (TextView)dialogView.findViewById(R.id.title);
@@ -85,14 +85,14 @@ public class UpdateController implements OnClickListener {
         public void onServiceConnected(ComponentName name, IBinder binder) {
             KLog.i("updateService bind ok");
             mUpdateService = ((UpdateService.UpdateServiceBinder)binder).getService();
-            sendMessage(MessageID.AUTO_UPDATE_SERVICE_CONNECTED);
+            sendMessage(UpdateService.AUTO_UPDATE_SERVICE_CONNECTED);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             KLog.e("updateService bind error");
             mUpdateService = null;
-            sendMessage(MessageID.AUTO_UPDATE_SERVICE_DISCONNECTED);
+            sendMessage(UpdateService.AUTO_UPDATE_SERVICE_DISCONNECTED);
         }
     };
 

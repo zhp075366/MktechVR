@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Binder;
@@ -16,22 +17,63 @@ import android.os.Message;
 import android.widget.RemoteViews;
 
 import com.gotech.vrplayer.R;
+import com.gotech.vrplayer.utils.AsyncTaskWrapper;
+import com.gotech.vrplayer.utils.Constants;
+import com.gotech.vrplayer.utils.MD5Util;
 import com.gotech.vrplayer.utils.SDCardUtil;
 import com.socks.library.KLog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
+import java.net.URL;
 
 public class UpdateService extends Service {
 
     private Handler mHandler;
     private Context mContext;
     private Resources mResources;
-    private CheckUpdateThread mCheckThread;
-    private DownloadUpdateThread mDownloadThread;
     private UPDATE_SERVICE_STATE mServiceState = UPDATE_SERVICE_STATE.IDLE;
     private UpdateServiceBinder mUpdateServiceBinder = new UpdateServiceBinder();
 
-    // 更新服务器信息
+    // Hander消息
+    private static final int MESSAGE_ID_START = 0x00000000;
+    public static final int AUTO_UPDATE_SERVICE_CONNECTED = MESSAGE_ID_START + 1;
+    public static final int AUTO_UPDATE_CHECKING_COMPLETE = AUTO_UPDATE_SERVICE_CONNECTED + 1;
+    public static final int AUTO_UPDATE_SERVICE_DISCONNECTED = AUTO_UPDATE_CHECKING_COMPLETE + 1;
+    public static final int AUTO_UPDATE_DOWNLOADING_COMPLETE = AUTO_UPDATE_SERVICE_DISCONNECTED + 1;
+
+    // 检测更新消息
+    public enum CHECK_UPDATE_RESULT {
+        TIMEOUT, EXCEPTION, NO_UPDATE, HAVE_UPDATE
+    }
+
+    public class CheckUpdateMsg {
+        public int appSize;
+        public String strAppMd5;
+        public String strCheckResult;
+        public CHECK_UPDATE_RESULT eResult;
+    }
+
+    // 下载更新消息
+    public enum DOWNLOAD_UPDATE_RESULT {
+        FAIL, SUCCESS
+    }
+
+    public class DownloadUpdateMsg {
+        public String strDownloadResult;
+        public DOWNLOAD_UPDATE_RESULT eResult;
+    }
+
+    // 服务器相关信息
     private static final String UPDATE_CFG = "update.cfg";
     private static final String UPDATE_FILE = "MKIPC.apk";
     private static final String SERVER_ROOT = "http://192.168.10.32/ipc_update/";
@@ -40,6 +82,17 @@ public class UpdateService extends Service {
     private Notification m_Notification;
     private Notification.Builder m_NBuilder;
     private NotificationManager m_NotificationManager;
+
+    // 检测更新任务
+    private AsyncTaskWrapper<String, Void, CheckUpdateMsg> mCheckUpdateTask;
+    private AsyncTaskWrapper.OnLoadListener<String, Void, CheckUpdateMsg> mCheckUpdateListener;
+    // 下载更新任务
+    private AsyncTaskWrapper<String, Integer, DownloadUpdateMsg> mDownloadUpdateTask;
+    private AsyncTaskWrapper.OnLoadListener<String, Integer, DownloadUpdateMsg> mDownloadUpdateListener;
+
+    // 文件大小及MD5值
+    private int mFileLentgh;
+    private String mStrUpdateMd5;
 
     public enum UPDATE_SERVICE_STATE {
         IDLE, CHECKING, DOWNLOADINIG
@@ -62,6 +115,8 @@ public class UpdateService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         KLog.i("updateService onStart");
         mServiceState = UPDATE_SERVICE_STATE.IDLE;
+        initCheckUpdateListener();
+        initDownloadUpdateListener();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -70,14 +125,19 @@ public class UpdateService extends Service {
     }
 
     public void startDownloadApp(String appMd5, int fileLength) {
-        mDownloadThread = new DownloadUpdateThread(SERVER_ROOT + UPDATE_FILE, mUpdateListener, appMd5, fileLength);
-        mDownloadThread.setTimeoutCount(10);
-        mDownloadThread.start();
+        mFileLentgh = fileLength;
+        mStrUpdateMd5 = appMd5;
+        String downUrl = SERVER_ROOT + UPDATE_FILE;
+        mDownloadUpdateTask = new AsyncTaskWrapper<>();
+        mDownloadUpdateTask.setOnTaskListener(mDownloadUpdateListener);
+        mDownloadUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED, downUrl);
     }
 
     public void startCheckUpdate() {
-        mCheckThread = new CheckUpdateThread(SERVER_ROOT + UPDATE_CFG, mContext, mUpdateListener);
-        mCheckThread.start();
+        String checkUrl = SERVER_ROOT + UPDATE_CFG;
+        mCheckUpdateTask = new AsyncTaskWrapper<>();
+        mCheckUpdateTask.setOnTaskListener(mCheckUpdateListener);
+        mCheckUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED, checkUrl);
     }
 
     public UPDATE_SERVICE_STATE getServiceState() {
@@ -98,20 +158,8 @@ public class UpdateService extends Service {
     public void onDestroy() {
         super.onDestroy();
         KLog.e("updateService onDestroy");
-        if (m_NotificationManager != null)
+        if (m_NotificationManager != null) {
             m_NotificationManager.cancel(0);
-        try {
-            if (mDownloadThread != null && mDownloadThread.isAlive()) {
-                mDownloadThread.mStop = true;
-                mDownloadThread.join();
-                mDownloadThread = null;
-            }
-            if (mCheckThread != null && mCheckThread.isAlive()) {
-                mCheckThread.join();
-                mCheckThread = null;
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -125,7 +173,7 @@ public class UpdateService extends Service {
         mContext.startActivity(intent);
     }
 
-    private void sendCheckResultMessage(int what, CheckUpdateThread.CheckUpdateMsg checkMsg) {
+    private void sendCheckResultMessage(int what, CheckUpdateMsg checkMsg) {
         if (mHandler != null) {
             Message msg = Message.obtain();
             msg.what = what;
@@ -134,7 +182,7 @@ public class UpdateService extends Service {
         }
     }
 
-    private void sendDownloadResultMessage(int what, DownloadUpdateThread.DownloadUpdateMsg downloadMsg) {
+    private void sendDownloadResultMessage(int what, DownloadUpdateMsg downloadMsg) {
         if (mHandler != null) {
             Message msg = Message.obtain();
             msg.what = what;
@@ -183,51 +231,287 @@ public class UpdateService extends Service {
         m_NotificationManager.notify(0, m_Notification);
     }
 
-    private UpdateCallback mUpdateListener = new UpdateCallback() {
+    private void initCheckUpdateListener() {
+        mCheckUpdateListener = new AsyncTaskWrapper.OnLoadListener<String, Void, CheckUpdateMsg>() {
+            @Override
+            public void onStart(Object taskTag) {
+                mServiceState = UPDATE_SERVICE_STATE.CHECKING;
+            }
 
-        @Override
-        public void onCheckUpdateStart() {
-            mServiceState = UPDATE_SERVICE_STATE.CHECKING;
-        }
+            @Override
+            public void onCancel(Object taskTag) {
 
-        @Override
-        public void onDownloadUpdateStart() {
-            mServiceState = UPDATE_SERVICE_STATE.DOWNLOADINIG;
-        }
+            }
 
-        @Override
-        public void onDownloadUpdateProgress(int nProgress) {
-            KLog.i("progress=" + nProgress);
-            notifyDownloadProgress(nProgress);
-        }
+            @Override
+            public void onResult(Object taskTag, CheckUpdateMsg checkUpdateMsg) {
+                mServiceState = UPDATE_SERVICE_STATE.IDLE;
+                sendCheckResultMessage(AUTO_UPDATE_CHECKING_COMPLETE, checkUpdateMsg);
+            }
 
-        @Override
-        public void onCheckUpdateComplete(CheckUpdateThread.CheckUpdateMsg updateMsg) {
-            mServiceState = UPDATE_SERVICE_STATE.IDLE;
-            sendCheckResultMessage(MessageID.AUTO_UPDATE_CHECKING_COMPLETE, updateMsg);
-        }
+            @Override
+            public void onProgress(Object taskTag, Void... values) {
 
-        @Override
-        public void onDownloadUpdateFail() {
-            KLog.e("onDownloadUpdateFail");
-            m_NotificationManager.cancel(0);
-            mServiceState = UPDATE_SERVICE_STATE.IDLE;
-            DownloadUpdateThread.DownloadUpdateMsg downloadMsg = new DownloadUpdateThread.DownloadUpdateMsg();
-            downloadMsg.strDownloadResult = mResources.getString(R.string.update_failed_msg);
-            downloadMsg.eResult = DownloadUpdateThread.DOWNLOAD_UPDATE_RESULT.FAIL;
-            sendDownloadResultMessage(MessageID.AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadMsg);
-        }
+            }
 
-        @Override
-        public void onDownloadUpdateSuccess() {
-            KLog.i("onDownloadUpdateSuccess");
-            m_NotificationManager.cancel(0);
-            mServiceState = UPDATE_SERVICE_STATE.IDLE;
-            DownloadUpdateThread.DownloadUpdateMsg downloadMsg = new DownloadUpdateThread.DownloadUpdateMsg();
-            downloadMsg.strDownloadResult = mResources.getString(R.string.update_success_msg);
-            downloadMsg.eResult = DownloadUpdateThread.DOWNLOAD_UPDATE_RESULT.SUCCESS;
-            sendDownloadResultMessage(MessageID.AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadMsg);
-            installPackage();
+            @Override
+            public CheckUpdateMsg onWorkerThread(Object taskTag, String... params) {
+                return checkUpdateRun(params[0]);
+            }
+        };
+    }
+
+    private void initDownloadUpdateListener() {
+        mDownloadUpdateListener = new AsyncTaskWrapper.OnLoadListener<String, Integer, DownloadUpdateMsg>() {
+            @Override
+            public void onStart(Object taskTag) {
+                mServiceState = UPDATE_SERVICE_STATE.DOWNLOADINIG;
+            }
+
+            @Override
+            public void onCancel(Object taskTag) {
+
+            }
+
+            @Override
+            public void onResult(Object taskTag, DownloadUpdateMsg downloadUpdateMsg) {
+                m_NotificationManager.cancel(0);
+                mServiceState = UPDATE_SERVICE_STATE.IDLE;
+                if (downloadUpdateMsg.eResult == DOWNLOAD_UPDATE_RESULT.FAIL) {
+                    downloadUpdateMsg.strDownloadResult = mResources.getString(R.string.update_failed_msg);
+                    sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
+                } else if (downloadUpdateMsg.eResult == DOWNLOAD_UPDATE_RESULT.SUCCESS) {
+                    downloadUpdateMsg.strDownloadResult = mResources.getString(R.string.update_success_msg);
+                    sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
+                    installPackage();
+                }
+            }
+
+            @Override
+            public void onProgress(Object taskTag, Integer... values) {
+                KLog.i("progress=" + values[0]);
+                notifyDownloadProgress(values[0]);
+            }
+
+            @Override
+            public DownloadUpdateMsg onWorkerThread(Object taskTag, String... params) {
+                return downloadUpdateRun(params[0]);
+            }
+        };
+    }
+
+    public CheckUpdateMsg checkUpdateRun(String url) {
+        CheckUpdateMsg resultMsg = new CheckUpdateMsg();
+        resultMsg.strCheckResult = null;
+        try {
+            PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+            int nCurVersionCode = packageInfo.versionCode;
+            String updateDetail = getUpdateDetail(url, "UTF-8");
+            JSONArray arr = new JSONArray(updateDetail);
+            if (arr.length() > 0) {
+                JSONObject obj = arr.getJSONObject(0);
+                String strMd5 = obj.getString("appMD5");
+                int appSize = obj.getInt("appSize");
+                int nNewVersionCode = obj.getInt("verCode");
+                String updateVersion = mContext.getResources().getString(R.string.update_info_version);
+                String updateSize = mContext.getResources().getString(R.string.update_info_size);
+                String updateContent = mContext.getResources().getString(R.string.update_info_content);
+                String sizeStr = Constants.TWO_DECIMAL_FORMAT.format((double)appSize / 1024 / 1024);
+                String strTipsContent = String.format(updateSize, sizeStr) + "\n";
+                strTipsContent = strTipsContent + updateVersion + obj.getString("verName") + "\n";
+                strTipsContent = strTipsContent + updateContent + obj.getString("updateInfo");
+                if (nNewVersionCode > nCurVersionCode) {
+                    resultMsg.appSize = appSize;
+                    resultMsg.strAppMd5 = strMd5;
+                    resultMsg.strCheckResult = strTipsContent;
+                    resultMsg.eResult = CHECK_UPDATE_RESULT.HAVE_UPDATE;
+                } else {
+                    resultMsg.eResult = CHECK_UPDATE_RESULT.NO_UPDATE;
+                }
+            }
         }
-    };
+        catch (SocketTimeoutException e) {
+            e.printStackTrace();
+            resultMsg.eResult = CHECK_UPDATE_RESULT.TIMEOUT;
+            KLog.e("CheckUpdate ConnectTimeoutException");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            resultMsg.eResult = CHECK_UPDATE_RESULT.EXCEPTION;
+            KLog.e("CheckUpdate OtherException");
+        }
+        return resultMsg;
+    }
+
+    private String getUpdateDetail(String requestUrl, String charset) throws Exception {
+        String detailInfo = "";
+        HttpURLConnection urlConnection = null;
+        BufferedReader bufferedReader = null;
+        try {
+            URL url = new URL(requestUrl);
+            urlConnection = (HttpURLConnection)url.openConnection();
+            urlConnection.setDoInput(true);
+            urlConnection.setReadTimeout(60000);
+            urlConnection.setConnectTimeout(10000);
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setRequestProperty("Content-Type", "text/plain;charset=utf-8");
+            urlConnection.connect();
+            int responseCode = urlConnection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), charset));
+                StringBuilder stringBuilder = new StringBuilder("");
+                String line;
+                String NL = System.getProperty("line.separator");
+                while ((line = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(line);
+                    stringBuilder.append(NL);
+                }
+                detailInfo = stringBuilder.toString();
+                KLog.i(detailInfo);
+            } else {
+                KLog.e("ResponseCode:" + responseCode + ", msg:" + urlConnection.getResponseMessage());
+                throw new Exception();
+            }
+        }
+        finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                }
+                catch (IOException e) {
+                    KLog.e(e.getMessage());
+                }
+            }
+        }
+        return detailInfo;
+    }
+
+    private File createDownloadFile() {
+        String saveRoot = SDCardUtil.getDownloadSaveRootPath();
+        File file = new File(saveRoot, SDCardUtil.DOWNLOAD_APK_NAME);
+        if (file.exists()) {
+            file.delete();
+        }
+        SDCardUtil.createFolder(saveRoot);
+        try {
+            RandomAccessFile out = new RandomAccessFile(file, "rwd");
+            out.setLength(mFileLentgh);
+            out.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            KLog.e("createDownloadFile error");
+            return null;
+        }
+        return file;
+    }
+
+    private DownloadUpdateMsg downloadUpdateRun(String downUrl) {
+        int retryCount = 10;
+        int receivedBytes = 0;
+        boolean bDownloadComplete = false;
+        File file = createDownloadFile();
+        if (file == null) {
+            DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
+            resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
+            return resultMsg;
+        }
+        while (retryCount > 0) {
+            int progress;
+            int currentProgress = 0;
+            RandomAccessFile raFile = null;
+            BufferedInputStream in = null;
+            HttpURLConnection urlConnection = null;
+            try {
+                URL url = new URL(downUrl);
+                urlConnection = (HttpURLConnection)url.openConnection();
+                urlConnection.setDoInput(true);
+                urlConnection.setReadTimeout(10000);
+                urlConnection.setConnectTimeout(10000);
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestProperty("Range", "bytes=" + receivedBytes + "-" + (mFileLentgh - 1));
+                urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+                urlConnection.connect();
+                int nResponseCode = urlConnection.getResponseCode();
+                if (nResponseCode == HttpURLConnection.HTTP_OK || nResponseCode == HttpURLConnection.HTTP_PARTIAL) {
+                    raFile = new RandomAccessFile(file, "rwd");
+                    raFile.seek(receivedBytes);
+                    byte[] buffer = new byte[10240];
+                    in = new BufferedInputStream(urlConnection.getInputStream());
+                    do {
+                        int nRead = in.read(buffer);
+                        if (nRead > 0) {
+                            raFile.write(buffer, 0, nRead);
+                            receivedBytes += nRead;
+                        }
+                        progress = (int)(((float)receivedBytes / mFileLentgh) * 100);
+                        if (progress - currentProgress >= 1) {
+                            currentProgress = progress;
+                            mDownloadUpdateTask.updateProgress(progress);
+                        }
+                        if (nRead < 0 && receivedBytes == mFileLentgh) {
+                            bDownloadComplete = true;
+                            break;
+                        }
+                    }while (true);
+                } else {
+                    KLog.e("ResponseCode:" + nResponseCode + ", msg:" + urlConnection.getResponseMessage() + " retry...");
+                }
+            }
+            catch (SocketTimeoutException e) {
+                retryCount--;
+                e.printStackTrace();
+                KLog.e("DownloadUpdate SocketTimeoutException retry");
+            }
+            catch (IOException e) {
+                retryCount--;
+                e.printStackTrace();
+                KLog.e("DownloadUpdate IOException retry");
+            }
+            finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (raFile != null) {
+                    try {
+                        raFile.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+            }
+            if (bDownloadComplete) {
+                break;
+            }
+        }
+        return checkDownloadFile(bDownloadComplete, file);
+    }
+
+    private DownloadUpdateMsg checkDownloadFile(boolean bComplete, File file) {
+        DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
+        if (bComplete) {
+            String strDownloadedMd5 = MD5Util.getFileMD5(file);
+            if (mStrUpdateMd5.equals(strDownloadedMd5)) {
+                resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.SUCCESS;
+            } else {
+                KLog.e("DownloadUpdate Md5 Not Equal");
+                resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
+            }
+        } else {
+            resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
+        }
+        return resultMsg;
+    }
 }

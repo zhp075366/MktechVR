@@ -15,11 +15,8 @@ import android.widget.Toast;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
-import com.gotech.vrplayer.module.personal.update.CheckUpdateThread;
 import com.gotech.vrplayer.module.personal.update.DialogCreater;
-import com.gotech.vrplayer.module.personal.update.DownloadUpdateThread;
-import com.gotech.vrplayer.module.personal.update.MessageID;
-import com.gotech.vrplayer.module.personal.update.UpdateController;
+import com.gotech.vrplayer.module.personal.update.UpdateManager;
 import com.gotech.vrplayer.module.personal.update.UpdateService;
 import com.gotech.vrplayer.utils.NetworkUtil;
 import com.gotech.vrplayer.utils.ToastUtil;
@@ -51,7 +48,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     // 自更新Service
     private CustomDialog mCheckingDialog;
     private UpdateService mUpdateService;
-    private UpdateController mUpdateController;
+    private UpdateManager mUpdateManager;
 
     public static PersonalFragment newInstance(String arg) {
         Bundle args = new Bundle();
@@ -82,7 +79,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     public void onDestroyView() {
         if (mUpdateService != null) {
             mUpdateService.setExternalHandler(null);
-            mUpdateController.unbindUpdateService();
+            mUpdateManager.unbindUpdateService();
         }
         mAutoUpdateHandler.removeCallbacksAndMessages(null);
         super.onDestroyView();
@@ -127,44 +124,44 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     }
 
     private void initUpdateService() {
-        mUpdateController = new UpdateController(mContext);
+        mUpdateManager = new UpdateManager(mContext);
         // 此Handler用于Service连接回调通知
-        mUpdateController.setExternalHandler(mAutoUpdateHandler);
-        mUpdateController.startUpdateServiceIfStoped();
-        mUpdateController.bindUpdateService();
+        mUpdateManager.setExternalHandler(mAutoUpdateHandler);
+        mUpdateManager.startUpdateServiceIfStoped();
+        mUpdateManager.bindUpdateService();
     }
 
     private Handler mAutoUpdateHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MessageID.AUTO_UPDATE_SERVICE_CONNECTED:
-                    mUpdateService = mUpdateController.getUpdateServiceInstance();
+                case UpdateService.AUTO_UPDATE_SERVICE_CONNECTED:
+                    mUpdateService = mUpdateManager.getUpdateServiceInstance();
                     break;
-                case MessageID.AUTO_UPDATE_SERVICE_DISCONNECTED:
+                case UpdateService.AUTO_UPDATE_SERVICE_DISCONNECTED:
                     KLog.e("AUTO_UPDATE_SERVICE_DISCONNECTED");
                     mUpdateService = null;
                     break;
-                case MessageID.AUTO_UPDATE_CHECKING_COMPLETE:
+                case UpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
                     if (mCheckingDialog != null && mCheckingDialog.isShowing()) {
                         mCheckingDialog.dismiss();
                         mCheckingDialog = null;
                     }
-                    CheckUpdateThread.CheckUpdateMsg updateMsg = (CheckUpdateThread.CheckUpdateMsg)msg.obj;
-                    if (updateMsg.eResult == CheckUpdateThread.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                        mUpdateController.initDialogView();
-                        mUpdateController.showUpdateDialog(updateMsg.strCheckResult);
-                        mUpdateController.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
-                    } else if (updateMsg.eResult == CheckUpdateThread.CHECK_UPDATE_RESULT.NO_UPDATE) {
+                    UpdateService.CheckUpdateMsg updateMsg = (UpdateService.CheckUpdateMsg)msg.obj;
+                    if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
+                        mUpdateManager.initDialogView();
+                        mUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
+                        mUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
+                    } else if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.NO_UPDATE) {
                         ToastUtil.showToast(mContext, R.string.update_already_new, Toast.LENGTH_SHORT);
-                    } else if (updateMsg.eResult == CheckUpdateThread.CHECK_UPDATE_RESULT.TIMEOUT) {
+                    } else if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.TIMEOUT) {
                         ToastUtil.showToast(mContext, R.string.update_check_timeout, Toast.LENGTH_SHORT);
-                    } else if (updateMsg.eResult == CheckUpdateThread.CHECK_UPDATE_RESULT.EXCEPTION) {
+                    } else if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.EXCEPTION) {
                         ToastUtil.showToast(mContext, R.string.update_check_exception, Toast.LENGTH_SHORT);
                     }
                     break;
-                case MessageID.AUTO_UPDATE_DOWNLOADING_COMPLETE:
-                    DownloadUpdateThread.DownloadUpdateMsg downloadMsg = (DownloadUpdateThread.DownloadUpdateMsg)msg.obj;
+                case UpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
+                    UpdateService.DownloadUpdateMsg downloadMsg = (UpdateService.DownloadUpdateMsg)msg.obj;
                     ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
                     break;
             }

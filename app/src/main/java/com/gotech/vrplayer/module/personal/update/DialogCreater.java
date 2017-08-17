@@ -31,7 +31,7 @@ public class DialogCreater {
         } else {
             view.findViewById(R.id.tvTip).setVisibility(View.GONE);
         }
-        CustomDialog dialogWaiting = new CustomDialog(context, view, R.style.MyDialog);
+        CustomDialog dialogWaiting = new CustomDialog(context, view, R.style.WaitDialog);
         dialogWaiting.show();
         dialogWaiting.setCancelable(false);
         return dialogWaiting;

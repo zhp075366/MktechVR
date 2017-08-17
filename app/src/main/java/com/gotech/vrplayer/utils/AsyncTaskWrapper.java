@@ -51,7 +51,7 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
     @Override
     protected void onProgressUpdate(Progress... values) {
         super.onProgressUpdate(values);
-        mListener.onProgress(mTaskTag, values[0]);
+        mListener.onProgress(mTaskTag, values);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
 
         void onResult(Object taskTag, Result result);
 
-        void onProgress(Object taskTag, Progress values);
+        void onProgress(Object taskTag, Progress... values);
 
         Result onWorkerThread(Object taskTag, Params... params);
 

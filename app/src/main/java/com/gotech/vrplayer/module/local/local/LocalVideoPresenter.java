@@ -100,7 +100,7 @@ public class LocalVideoPresenter {
             }
 
             @Override
-            public void onProgress(Object taskTag, Void values) {
+            public void onProgress(Object taskTag, Void... values) {
 
             }
 
@@ -130,7 +130,7 @@ public class LocalVideoPresenter {
             }
 
             @Override
-            public void onProgress(Object taskTag, Void values) {
+            public void onProgress(Object taskTag, Void... values) {
 
             }
 

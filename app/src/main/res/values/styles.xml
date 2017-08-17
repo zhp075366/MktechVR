@@ -37,8 +37,8 @@
         <item name="android:background">@color/black_overlay</item>
     </style>
 
-    <!-- 自定义update tip dialog -->
-    <style name="ExAlertDialog" parent="@android:style/Theme.Dialog">
+    <!-- 自定义update dialog -->
+    <style name="UpdateDialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
@@ -46,7 +46,7 @@
     </style>
 
     <!--圆角Dialog-->
-    <style name="MyDialog" parent="@android:style/Theme.Dialog">
+    <style name="WaitDialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowIsTranslucent">true</item>
