@@ -110,8 +110,7 @@ public class UpdateService extends Service {
                 mCheckThread.join();
                 mCheckThread = null;
             }
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -170,10 +169,11 @@ public class UpdateService extends Service {
         if (Build.VERSION.SDK_INT >= 11) {
             m_NBuilder.setContentText(progress + "%");
             m_NBuilder.setProgress(100, progress, false);
-            if (Build.VERSION.SDK_INT >= 16)
+            if (Build.VERSION.SDK_INT >= 16) {
                 m_Notification = m_NBuilder.build();
-            else
+            } else {
                 m_Notification = m_NBuilder.getNotification();
+            }
         } else {
             RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.layout_download_progressbar);
             remoteViews.setProgressBar(R.id.notificationProgress, 100, progress, false);
