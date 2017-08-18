@@ -1,5 +1,7 @@
 package com.gotech.vrplayer.module.main;
 
+import android.content.Context;
+
 /**
  * Author: ZouHaiping on 2017/6/19
  * E-Mail: haiping.zou@gotechcn.cn
@@ -7,21 +9,15 @@ package com.gotech.vrplayer.module.main;
  */
 public class MainPresenter {
 
-    private MainActivity mActivity;
+    private Context mContext;
     private IMainView mView;
 
-    // 通过一个Manager来做
-
-    public MainPresenter(MainActivity activity, IMainView view) {
+    public MainPresenter(Context context, IMainView view) {
         mView = view;
-        mActivity = activity;
+        mContext = context;
     }
 
     public void destroyPresenter() {
 
-    }
-
-    public void checkUpdate() {
-        
     }
 }

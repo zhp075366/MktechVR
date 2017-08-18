@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,7 +20,11 @@ import com.gotech.vrplayer.base.BaseActivity;
 import com.gotech.vrplayer.module.home.HomeFragment;
 import com.gotech.vrplayer.module.local.LocalFragment;
 import com.gotech.vrplayer.module.personal.PersonalFragment;
+import com.gotech.vrplayer.module.personal.update.DialogCreater;
+import com.gotech.vrplayer.module.personal.update.UpdateManager;
+import com.gotech.vrplayer.module.personal.update.UpdateService;
 import com.gotech.vrplayer.module.video.VideoFragment;
+import com.gotech.vrplayer.utils.NetworkUtil;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.VrActionBar;
 import com.socks.library.KLog;
@@ -52,6 +58,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
     // 页面类型标识
     private int iPageType = 0;
 
+    // APK更新管理器
+    private UpdateManager mUpdateManager;
+
     // 权限请求码
     private static final int REQUEST_CODE_STORAGE_PERM = 100;
 
@@ -62,7 +71,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
         initNavigationBar();
         requestPermissions();
         mVrActionBar.setOnRightButtonClickListner(this);
-        checkUpdate();
+        //initUpdateManager();
+        //checkUpdate();
     }
 
     @Override
@@ -212,12 +222,12 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
 
     @Override
     protected void onDestroy() {
-        mPresenter.destroyPresenter();
+        if (mUpdateManager != null) {
+            mUpdateManager.setUIHandler(null);
+            mUpdateManager.unbindUpdateService();
+        }
+        mUIHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
-    }
-
-    private void checkUpdate() {
-        mPresenter.checkUpdate();
     }
 
     @Override
@@ -233,7 +243,44 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
         }
     }
 
-    public VrActionBar getVrActionBar() {
-        return mVrActionBar;
+    private void initUpdateManager() {
+        mUpdateManager = new UpdateManager(mContext);
+        mUpdateManager.startUpdateService();
+        mUpdateManager.bindUpdateService();
     }
+
+    public void checkUpdate() {
+        if (!NetworkUtil.checkNetworkConnection(mContext)) {
+            return;
+        }
+        UpdateService.UPDATE_SERVICE_STATE eState = mUpdateManager.getServiceState();
+        if (eState == UpdateService.UPDATE_SERVICE_STATE.CHECKING) {
+            return;
+        } else if (eState == UpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+            return;
+        }
+        // 此Handler用于Service检测更新/下载更新结果回调通知
+        mUpdateManager.setUIHandler(mUIHandler);
+        mUpdateManager.checkUpdate();
+    }
+
+    private Handler mUIHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
+                    UpdateService.CheckUpdateMsg updateMsg = (UpdateService.CheckUpdateMsg)msg.obj;
+                    if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
+                        mUpdateManager.initDialogView();
+                        mUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
+                        mUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
+                    }
+                    break;
+                case UpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
+                    UpdateService.DownloadUpdateMsg downloadMsg = (UpdateService.DownloadUpdateMsg)msg.obj;
+                    ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
+                    break;
+            }
+        }
+    };
 }

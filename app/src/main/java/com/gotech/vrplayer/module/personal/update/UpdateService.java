@@ -123,8 +123,8 @@ public class UpdateService extends Service {
     }
 
     public void startDownloadApp(String appMd5, int fileLength) {
-        mAPKLentgh = fileLength;
         mAPKMD5 = appMd5;
+        mAPKLentgh = fileLength;
         mDownloadUpdateTask = new AsyncTaskWrapper<>();
         mDownloadUpdateTask.setTaskTag("DownloadUpdateTask");
         mDownloadUpdateTask.setOnTaskListener(mDownloadUpdateListener);

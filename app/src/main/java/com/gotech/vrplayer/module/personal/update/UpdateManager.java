@@ -99,7 +99,7 @@ public class UpdateManager implements OnClickListener {
         mContext.startService(intent);
     }
 
-    public void stopUpdateServiceIfStarted() {
+    public void stopUpdateService() {
         if (!AppUtil.isServiceRunning(mContext, UpdateService.class.getName())) {
             KLog.e("updateService is not running");
             return;
