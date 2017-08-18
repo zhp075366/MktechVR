@@ -226,7 +226,7 @@ public class AppUpdateService extends Service {
                 mNotification = mNBuilder.getNotification();
             }
         } else {
-            RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.layout_download_progressbar);
+            RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.layout_download_notification);
             remoteViews.setProgressBar(R.id.notificationProgress, 100, progress, false);
             remoteViews.setTextViewText(R.id.notificationPercent, progress + "%");
             mNotification.contentView = remoteViews;
