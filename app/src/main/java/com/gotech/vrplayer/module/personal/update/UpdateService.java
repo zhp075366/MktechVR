@@ -369,6 +369,7 @@ public class UpdateService extends Service {
                     stringBuilder.append(NL);
                 }
                 detailInfo = stringBuilder.toString();
+                KLog.i(detailInfo);
             } else {
                 KLog.e("ResponseCode:" + responseCode + ", msg:" + urlConnection.getResponseMessage());
                 throw new Exception();
