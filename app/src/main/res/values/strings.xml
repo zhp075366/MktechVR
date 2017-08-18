@@ -28,7 +28,6 @@
     <string name="update_check_timeout">检查更新超时，请重试</string>
     <string name="update_check_exception">网络错误，请重试</string>
     <string name="update_check_tips">检测新版本...</string>
-    <string name="update_checking">正在检测更新...</string>
     <string name="update_downloading">正在下载更新...</string>
     <string name="update_info_version">最新版本:&#160;</string>
     <string name="update_info_size">新版大小:&#160;%1$sMB</string>

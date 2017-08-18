@@ -72,8 +72,8 @@ public class UpdateService extends Service {
     }
 
     // 服务器相关信息
-    private static final String UPDATE_CFG = "update.cfg";
-    private static final String UPDATE_FILE = "MKIPC.apk";
+    private static final String UPDATE_CFG_FILE = "update.cfg";
+    private static final String DOWNLOAD_APK_FILE = "MKIPC.apk";
     private static final String SERVER_ROOT = "http://192.168.10.32/ipc_update/";
 
     // 通知
@@ -82,11 +82,11 @@ public class UpdateService extends Service {
     private NotificationManager mNotificationManager;
 
     // 检测更新任务
-    private AsyncTaskWrapper<String, Void, CheckUpdateMsg> mCheckUpdateTask;
-    private AsyncTaskWrapper.OnLoadListener<String, Void, CheckUpdateMsg> mCheckUpdateListener;
+    private AsyncTaskWrapper<Void, Void, CheckUpdateMsg> mCheckUpdateTask;
+    private AsyncTaskWrapper.OnLoadListener<Void, Void, CheckUpdateMsg> mCheckUpdateListener;
     // 下载更新任务
-    private AsyncTaskWrapper<String, Integer, DownloadUpdateMsg> mDownloadUpdateTask;
-    private AsyncTaskWrapper.OnLoadListener<String, Integer, DownloadUpdateMsg> mDownloadUpdateListener;
+    private AsyncTaskWrapper<Void, Integer, DownloadUpdateMsg> mDownloadUpdateTask;
+    private AsyncTaskWrapper.OnLoadListener<Void, Integer, DownloadUpdateMsg> mDownloadUpdateListener;
 
     // APK大小及MD5值
     private int mAPKLentgh;
@@ -125,19 +125,17 @@ public class UpdateService extends Service {
     public void startDownloadApp(String appMd5, int fileLength) {
         mAPKLentgh = fileLength;
         mAPKMD5 = appMd5;
-        String downUrl = SERVER_ROOT + UPDATE_FILE;
         mDownloadUpdateTask = new AsyncTaskWrapper<>();
         mDownloadUpdateTask.setTaskTag("DownloadUpdateTask");
         mDownloadUpdateTask.setOnTaskListener(mDownloadUpdateListener);
-        mDownloadUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED, downUrl);
+        mDownloadUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 
     public void startCheckUpdate() {
-        String checkUrl = SERVER_ROOT + UPDATE_CFG;
         mCheckUpdateTask = new AsyncTaskWrapper<>();
         mCheckUpdateTask.setTaskTag("CheckUpdateTask");
         mCheckUpdateTask.setOnTaskListener(mCheckUpdateListener);
-        mCheckUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED, checkUrl);
+        mCheckUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 
     public UPDATE_SERVICE_STATE getServiceState() {
@@ -170,7 +168,8 @@ public class UpdateService extends Service {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        File file = new File(SDCardUtil.getDownloadSaveRootPath(), SDCardUtil.DOWNLOAD_APK_NAME);
+        String saveDir = SDCardUtil.getDownloadSaveRootPath();
+        File file = new File(saveDir, DOWNLOAD_APK_FILE);
         String type = "application/vnd.android.package-archive";
         intent.setDataAndType(Uri.fromFile(file), type);
         mContext.startActivity(intent);
@@ -235,7 +234,7 @@ public class UpdateService extends Service {
     }
 
     private void initCheckUpdateListener() {
-        mCheckUpdateListener = new AsyncTaskWrapper.OnLoadListener<String, Void, CheckUpdateMsg>() {
+        mCheckUpdateListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, CheckUpdateMsg>() {
             @Override
             public void onStart(Object taskTag) {
                 mServiceState = UPDATE_SERVICE_STATE.CHECKING;
@@ -258,14 +257,14 @@ public class UpdateService extends Service {
             }
 
             @Override
-            public CheckUpdateMsg onWorkerThread(Object taskTag, String... params) {
-                return checkUpdateRun(params[0]);
+            public CheckUpdateMsg onWorkerThread(Object taskTag, Void... params) {
+                return checkUpdateRun();
             }
         };
     }
 
     private void initDownloadUpdateListener() {
-        mDownloadUpdateListener = new AsyncTaskWrapper.OnLoadListener<String, Integer, DownloadUpdateMsg>() {
+        mDownloadUpdateListener = new AsyncTaskWrapper.OnLoadListener<Void, Integer, DownloadUpdateMsg>() {
             @Override
             public void onStart(Object taskTag) {
                 mServiceState = UPDATE_SERVICE_STATE.DOWNLOADINIG;
@@ -297,19 +296,19 @@ public class UpdateService extends Service {
             }
 
             @Override
-            public DownloadUpdateMsg onWorkerThread(Object taskTag, String... params) {
-                return downloadUpdateRun(params[0]);
+            public DownloadUpdateMsg onWorkerThread(Object taskTag, Void... params) {
+                return downloadUpdateRun();
             }
         };
     }
 
-    public CheckUpdateMsg checkUpdateRun(String url) {
+    public CheckUpdateMsg checkUpdateRun() {
         CheckUpdateMsg resultMsg = new CheckUpdateMsg();
         resultMsg.strCheckResult = null;
         try {
             PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
             int nCurVersionCode = packageInfo.versionCode;
-            String updateDetail = getUpdateDetail(url, "UTF-8");
+            String updateDetail = getUpdateDetail();
             JSONArray arr = new JSONArray(updateDetail);
             if (arr.length() > 0) {
                 JSONObject obj = arr.getJSONObject(0);
@@ -332,13 +331,11 @@ public class UpdateService extends Service {
                     resultMsg.eResult = CHECK_UPDATE_RESULT.NO_UPDATE;
                 }
             }
-        }
-        catch (SocketTimeoutException e) {
+        } catch (SocketTimeoutException e) {
             e.printStackTrace();
             resultMsg.eResult = CHECK_UPDATE_RESULT.TIMEOUT;
             KLog.e("CheckUpdate ConnectTimeoutException");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             resultMsg.eResult = CHECK_UPDATE_RESULT.EXCEPTION;
             KLog.e("CheckUpdate OtherException");
@@ -346,12 +343,13 @@ public class UpdateService extends Service {
         return resultMsg;
     }
 
-    private String getUpdateDetail(String requestUrl, String charset) throws Exception {
+    private String getUpdateDetail() throws Exception {
         String detailInfo = "";
+        String charset = "UTF-8";
         HttpURLConnection urlConnection = null;
         BufferedReader bufferedReader = null;
         try {
-            URL url = new URL(requestUrl);
+            URL url = new URL(SERVER_ROOT + UPDATE_CFG_FILE);
             urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setReadTimeout(60000);
@@ -375,16 +373,14 @@ public class UpdateService extends Service {
                 KLog.e("ResponseCode:" + responseCode + ", msg:" + urlConnection.getResponseMessage());
                 throw new Exception();
             }
-        }
-        finally {
+        } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
             if (bufferedReader != null) {
                 try {
                     bufferedReader.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     KLog.e(e.getMessage());
                 }
             }
@@ -392,40 +388,40 @@ public class UpdateService extends Service {
         return detailInfo;
     }
 
-    private File createDownloadFile() {
-        String saveRoot = SDCardUtil.getDownloadSaveRootPath();
-        File file = new File(saveRoot, SDCardUtil.DOWNLOAD_APK_NAME);
+    private boolean createDownloadFile() {
+        String saveDir = SDCardUtil.getDownloadSaveRootPath();
+        File file = new File(saveDir, DOWNLOAD_APK_FILE);
         if (file.exists()) {
             file.delete();
         }
-        SDCardUtil.createFolder(saveRoot);
+        SDCardUtil.createFolder(saveDir);
         try {
             RandomAccessFile out = new RandomAccessFile(file, "rwd");
             out.setLength(mAPKLentgh);
             out.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             KLog.e("createDownloadFile error");
-            return null;
+            return false;
         }
-        return file;
+        return true;
     }
 
-    private DownloadUpdateMsg downloadUpdateRun(String downUrl) {
-        File file = createDownloadFile();
-        if (file == null) {
+    private DownloadUpdateMsg downloadUpdateRun() {
+        if (!createDownloadFile()) {
             DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
             resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
             return resultMsg;
         }
-        boolean bSuccess = downloadAppFile(downUrl, file);
-        return checkDownloadedFile(bSuccess, file);
+        boolean bSuccess = downloadAppFile();
+        return checkDownloadedFile(bSuccess);
     }
 
-    private DownloadUpdateMsg checkDownloadedFile(boolean bSuccess, File file) {
+    private DownloadUpdateMsg checkDownloadedFile(boolean bSuccess) {
         DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
         if (bSuccess) {
+            String saveDir = SDCardUtil.getDownloadSaveRootPath();
+            File file = new File(saveDir, DOWNLOAD_APK_FILE);
             String strDownloadedMd5 = MD5Util.getFileMD5(file);
             if (mAPKMD5.equals(strDownloadedMd5)) {
                 resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.SUCCESS;
@@ -439,7 +435,7 @@ public class UpdateService extends Service {
         return resultMsg;
     }
 
-    private boolean downloadAppFile(String downUrl, File file) {
+    private boolean downloadAppFile() {
         int retryCount = 10;
         int receivedBytes = 0;
         boolean bDownloadComplete = false;
@@ -450,7 +446,7 @@ public class UpdateService extends Service {
             BufferedInputStream in = null;
             HttpURLConnection urlConnection = null;
             try {
-                URL url = new URL(downUrl);
+                URL url = new URL(SERVER_ROOT + DOWNLOAD_APK_FILE);
                 urlConnection = (HttpURLConnection)url.openConnection();
                 urlConnection.setDoInput(true);
                 urlConnection.setReadTimeout(10000);
@@ -461,6 +457,8 @@ public class UpdateService extends Service {
                 urlConnection.connect();
                 int nResponseCode = urlConnection.getResponseCode();
                 if (nResponseCode == HttpURLConnection.HTTP_OK || nResponseCode == HttpURLConnection.HTTP_PARTIAL) {
+                    String saveDir = SDCardUtil.getDownloadSaveRootPath();
+                    File file = new File(saveDir, DOWNLOAD_APK_FILE);
                     raFile = new RandomAccessFile(file, "rwd");
                     raFile.seek(receivedBytes);
                     byte[] buffer = new byte[10240];
@@ -480,35 +478,30 @@ public class UpdateService extends Service {
                             bDownloadComplete = true;
                             break;
                         }
-                    }while (true);
+                    } while (true);
                 } else {
                     KLog.e("ResponseCode:" + nResponseCode + ", msg:" + urlConnection.getResponseMessage() + " retry...");
                 }
-            }
-            catch (SocketTimeoutException e) {
+            } catch (SocketTimeoutException e) {
                 retryCount--;
                 e.printStackTrace();
                 KLog.e("DownloadUpdate SocketTimeoutException retry");
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 retryCount--;
                 e.printStackTrace();
                 KLog.e("DownloadUpdate IOException retry");
-            }
-            finally {
+            } finally {
                 if (in != null) {
                     try {
                         in.close();
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
                 if (raFile != null) {
                     try {
                         raFile.close();
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }

@@ -15,7 +15,6 @@ import java.io.File;
 public class SDCardUtil {
 
     private static final String DOWNLOAD_DIR = "Download";
-    public static final String DOWNLOAD_APK_NAME = "MKIPC.apk";
 
     public static String getDownloadSaveRootPath() {
         String packageName = VRApplication.getApplication().getPackageName();
