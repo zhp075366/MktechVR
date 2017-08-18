@@ -1,11 +1,8 @@
 package com.gotech.vrplayer.module.personal.update;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.gotech.vrplayer.R;
@@ -13,15 +10,13 @@ import com.gotech.vrplayer.widget.CustomDialog;
 
 public class DialogCreater {
 
-    public static Dialog showDownloadDialog(Context context, int style, View view) {
-        DialogWrapper dialog = new DialogWrapper(context, style, view);
-        Window window = dialog.getWindow();
-        WindowManager.LayoutParams layoutParams = window.getAttributes();
-        layoutParams.alpha = 0.9f;
-        window.setAttributes(layoutParams);
-        dialog.setCancelable(true);
-        dialog.setCanceledOnTouchOutside(true);
-        return dialog;
+    public static CustomDialog showDownloadDialog(Context context, View view, String updateInfo) {
+        TextView textContent = (TextView)view.findViewById(R.id.text_content);
+        textContent.setText(updateInfo);
+        CustomDialog dialogWaiting = new CustomDialog(context, view, R.style.UpdateDialog);
+        dialogWaiting.show();
+        dialogWaiting.setCancelable(true);
+        return dialogWaiting;
     }
 
     public static CustomDialog showWaitingDialog(Context context, String tip) {

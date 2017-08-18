@@ -272,9 +272,8 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
                 case UpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
                     UpdateService.CheckUpdateMsg updateMsg = (UpdateService.CheckUpdateMsg)msg.obj;
                     if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                        mUpdateManager.initDialogView();
-                        mUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
                         mUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
+                        mUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
                     }
                     break;
                 case UpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:

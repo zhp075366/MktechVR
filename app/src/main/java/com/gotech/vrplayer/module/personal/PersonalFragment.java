@@ -139,9 +139,8 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
                     }
                     UpdateService.CheckUpdateMsg updateMsg = (UpdateService.CheckUpdateMsg)msg.obj;
                     if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                        mUpdateManager.initDialogView();
-                        mUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
                         mUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
+                        mUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
                     } else if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.NO_UPDATE) {
                         ToastUtil.showToast(mContext, R.string.update_already_new, Toast.LENGTH_SHORT);
                     } else if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.TIMEOUT) {

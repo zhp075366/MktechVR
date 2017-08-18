@@ -1,7 +1,6 @@
 package com.gotech.vrplayer.module.personal.update;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -16,12 +15,13 @@ import android.widget.TextView;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.AppUtil;
+import com.gotech.vrplayer.widget.CustomDialog;
 import com.socks.library.KLog;
 
 public class UpdateManager implements OnClickListener {
 
     private Context mContext;
-    private Dialog mDialog;
+    private CustomDialog mDialog;
     private Button mBtnOK;
     private Button mBtnCancel;
     private TextView mTextTitle;
@@ -38,17 +38,11 @@ public class UpdateManager implements OnClickListener {
     }
 
     @SuppressLint("InflateParams")
-    public void initDialogView() {
+    public void showUpdateDialog(String updateInfo) {
         View dialogView = mInflater.inflate(R.layout.dialog_update_tip, null);
-        mDialog = DialogCreater.showDownloadDialog(mContext, R.style.UpdateDialog, dialogView);
+        mDialog = DialogCreater.showDownloadDialog(mContext, dialogView, updateInfo);
         mBtnOK = (Button)dialogView.findViewById(R.id.okButton);
         mBtnCancel = (Button)dialogView.findViewById(R.id.cancelButton);
-        mTextTitle = (TextView)dialogView.findViewById(R.id.title);
-        mTextContent = (TextView)dialogView.findViewById(R.id.text_content);
-    }
-
-    public void showUpdateDialog(String updateInfo) {
-        mTextContent.setText(updateInfo);
         mBtnOK.setOnClickListener(this);
         mBtnCancel.setOnClickListener(this);
         mDialog.show();
