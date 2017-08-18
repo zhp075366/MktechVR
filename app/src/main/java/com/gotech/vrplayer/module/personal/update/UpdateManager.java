@@ -49,9 +49,6 @@ public class UpdateManager implements OnClickListener {
 
     public void showUpdateDialog(String updateInfo) {
         mTextContent.setText(updateInfo);
-        mBtnOK.setText(R.string.update_btnupdate);
-        mBtnCancel.setText(R.string.update_btnnext);
-        mTextTitle.setText(R.string.update_title);
         mBtnOK.setOnClickListener(this);
         mBtnCancel.setOnClickListener(this);
         mDialog.show();
