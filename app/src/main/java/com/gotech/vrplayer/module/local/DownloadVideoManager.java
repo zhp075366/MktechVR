@@ -79,7 +79,7 @@ public class DownloadVideoManager {
         List<Progress> downloadingList = getDownloadingProgress();
         for (Progress progress : downloadingList) {
             if (progress.tag.equals(bean.downUrl)) {
-                KLog.i("ADD_FAILED_IS_DOWNLOADING -> " + bean.showName);
+                KLog.i("ADD_FAILED_IS_DOWNLOADING->" + bean.showName);
                 return AddTaskResult.ADD_FAILED_IS_DOWNLOADING;
             }
         }
@@ -90,8 +90,8 @@ public class DownloadVideoManager {
         // 构建下载任务，传入一个tag和我们上一步创建的request对象
         DownloadTask downloadTask = OkDownload.request(tag, request);
         downloadTask.extra1(bean).fileName(bean.saveName).totalSize(bean.totalSize).save().start();
-        KLog.i("AddTaskResult.ADD_OK -> " + bean.showName);
-        ToastUtil.showToast(VRApplication.getApplication(), "AddTaskResult.ADD_OK -> " + bean.showName, Toast.LENGTH_SHORT);
+        KLog.i("AddTaskResult.ADD_OK->" + bean.showName);
+        ToastUtil.showToast(VRApplication.getApplication(), "ADD_OK->" + bean.showName, Toast.LENGTH_SHORT);
         return AddTaskResult.ADD_OK;
     }
 

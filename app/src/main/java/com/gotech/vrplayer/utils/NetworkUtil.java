@@ -10,7 +10,8 @@ public class NetworkUtil {
     public static boolean checkNetworkConnection(Context context) {
         boolean gprsConnected = false;
         boolean wifiConnected = false;
-        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        Context appContext = context.getApplicationContext();
+        ConnectivityManager connectivityManager = (ConnectivityManager)appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             wifiConnected = networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
@@ -22,7 +23,8 @@ public class NetworkUtil {
     // wifi是否已连接
     public static boolean isWifiConnected(Context context) {
         boolean wifiConnected = false;
-        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        Context appContext = context.getApplicationContext();
+        ConnectivityManager connectivityManager = (ConnectivityManager)appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             wifiConnected = networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
@@ -33,7 +35,8 @@ public class NetworkUtil {
     // 数据网络是否连接
     public static boolean isMobileConnected(Context context) {
         boolean mobileConnected = false;
-        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        Context appContext = context.getApplicationContext();
+        ConnectivityManager connectivityManager = (ConnectivityManager)appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             mobileConnected = networkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
