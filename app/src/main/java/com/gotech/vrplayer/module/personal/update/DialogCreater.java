@@ -14,7 +14,6 @@ public class DialogCreater {
         TextView textContent = (TextView)view.findViewById(R.id.text_content);
         textContent.setText(updateInfo);
         CustomDialog dialogWaiting = new CustomDialog(context, view, R.style.UpdateDialog);
-        dialogWaiting.show();
         dialogWaiting.setCancelable(true);
         return dialogWaiting;
     }
@@ -27,7 +26,6 @@ public class DialogCreater {
             view.findViewById(R.id.tvTip).setVisibility(View.GONE);
         }
         CustomDialog dialogWaiting = new CustomDialog(context, view, R.style.WaitDialog);
-        dialogWaiting.show();
         dialogWaiting.setCancelable(false);
         return dialogWaiting;
     }
