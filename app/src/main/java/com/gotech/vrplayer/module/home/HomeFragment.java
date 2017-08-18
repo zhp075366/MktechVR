@@ -98,7 +98,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
             if (eState != AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
                 mAppUpdateManager.stopUpdateService();
             }
-
         }
         mUIHandler.removeCallbacksAndMessages(null);
         super.onDestroyView();

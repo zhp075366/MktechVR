@@ -101,10 +101,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
             return;
         }
         AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateManager.getServiceState();
-        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
-            ToastUtil.showToast(mContext, R.string.update_checking, Toast.LENGTH_SHORT);
-            return;
-        } else if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
             ToastUtil.showToast(mContext, R.string.update_downloading, Toast.LENGTH_SHORT);
             return;
         }
