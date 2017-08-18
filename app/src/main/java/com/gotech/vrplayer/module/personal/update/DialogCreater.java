@@ -19,8 +19,8 @@ public class DialogCreater {
         WindowManager.LayoutParams layoutParams = window.getAttributes();
         layoutParams.alpha = 0.9f;
         window.setAttributes(layoutParams);
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
         return dialog;
     }
 

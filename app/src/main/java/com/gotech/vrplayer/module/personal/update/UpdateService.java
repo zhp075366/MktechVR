@@ -41,7 +41,7 @@ public class UpdateService extends Service {
     private Handler mUIHandler;
     private Context mContext;
     private Resources mResources;
-    private UPDATE_SERVICE_STATE mServiceState = UPDATE_SERVICE_STATE.IDLE;
+    private UPDATE_SERVICE_STATE mServiceState;
     private UpdateServiceBinder mUpdateServiceBinder = new UpdateServiceBinder();
 
     // Hander消息
@@ -92,6 +92,9 @@ public class UpdateService extends Service {
     private int mAPKLentgh;
     private String mAPKMD5;
 
+    // Service状态获取锁
+    private final Object mLock = new Object();
+
     public enum UPDATE_SERVICE_STATE {
         IDLE, CHECKING, DOWNLOADINIG
     }
@@ -112,7 +115,7 @@ public class UpdateService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         KLog.i("updateService onStart");
-        mServiceState = UPDATE_SERVICE_STATE.IDLE;
+        setServiceState(UPDATE_SERVICE_STATE.IDLE);
         initCheckUpdateListener();
         initDownloadUpdateListener();
         return super.onStartCommand(intent, flags, startId);
@@ -139,11 +142,15 @@ public class UpdateService extends Service {
     }
 
     public UPDATE_SERVICE_STATE getServiceState() {
-        return mServiceState;
+        synchronized (mLock) {
+            return mServiceState;
+        }
     }
 
     public void setServiceState(UPDATE_SERVICE_STATE eState) {
-        mServiceState = eState;
+        synchronized (mLock) {
+            mServiceState = eState;
+        }
     }
 
     public class UpdateServiceBinder extends Binder {
@@ -156,12 +163,6 @@ public class UpdateService extends Service {
     public void onDestroy() {
         super.onDestroy();
         KLog.e("updateService onDestroy");
-        if (mNotificationManager != null) {
-            mNotificationManager.cancel(0);
-        }
-        if (mDownloadUpdateTask != null) {
-            mDownloadUpdateTask.cancle();
-        }
     }
 
     private void installPackage() {
@@ -237,7 +238,7 @@ public class UpdateService extends Service {
         mCheckUpdateListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, CheckUpdateMsg>() {
             @Override
             public void onStart(Object taskTag) {
-                mServiceState = UPDATE_SERVICE_STATE.CHECKING;
+                setServiceState(UPDATE_SERVICE_STATE.CHECKING);
             }
 
             @Override
@@ -247,7 +248,7 @@ public class UpdateService extends Service {
 
             @Override
             public void onResult(Object taskTag, CheckUpdateMsg checkUpdateMsg) {
-                mServiceState = UPDATE_SERVICE_STATE.IDLE;
+                setServiceState(UPDATE_SERVICE_STATE.IDLE);
                 sendCheckResultMessage(AUTO_UPDATE_CHECKING_COMPLETE, checkUpdateMsg);
             }
 
@@ -267,7 +268,7 @@ public class UpdateService extends Service {
         mDownloadUpdateListener = new AsyncTaskWrapper.OnLoadListener<Void, Integer, DownloadUpdateMsg>() {
             @Override
             public void onStart(Object taskTag) {
-                mServiceState = UPDATE_SERVICE_STATE.DOWNLOADINIG;
+                setServiceState(UPDATE_SERVICE_STATE.DOWNLOADINIG);
             }
 
             @Override
@@ -278,7 +279,7 @@ public class UpdateService extends Service {
             @Override
             public void onResult(Object taskTag, DownloadUpdateMsg downloadUpdateMsg) {
                 mNotificationManager.cancel(0);
-                mServiceState = UPDATE_SERVICE_STATE.IDLE;
+                setServiceState(UPDATE_SERVICE_STATE.IDLE);
                 if (downloadUpdateMsg.eResult == DOWNLOAD_UPDATE_RESULT.FAIL) {
                     downloadUpdateMsg.strDownloadResult = mResources.getString(R.string.update_failed_msg);
                     sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
@@ -352,8 +353,8 @@ public class UpdateService extends Service {
             URL url = new URL(SERVER_ROOT + UPDATE_CFG_FILE);
             urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoInput(true);
-            urlConnection.setReadTimeout(60000);
-            urlConnection.setConnectTimeout(10000);
+            urlConnection.setReadTimeout(5000);
+            urlConnection.setConnectTimeout(5000);
             urlConnection.setRequestMethod("GET");
             urlConnection.setRequestProperty("Content-Type", "text/plain;charset=utf-8");
             urlConnection.connect();
@@ -368,7 +369,6 @@ public class UpdateService extends Service {
                     stringBuilder.append(NL);
                 }
                 detailInfo = stringBuilder.toString();
-                KLog.i(detailInfo);
             } else {
                 KLog.e("ResponseCode:" + responseCode + ", msg:" + urlConnection.getResponseMessage());
                 throw new Exception();

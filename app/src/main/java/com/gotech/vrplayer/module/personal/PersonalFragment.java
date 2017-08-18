@@ -21,6 +21,7 @@ import com.gotech.vrplayer.module.personal.update.UpdateService;
 import com.gotech.vrplayer.utils.NetworkUtil;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.CustomDialog;
+import com.socks.library.KLog;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -109,11 +110,11 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
             ToastUtil.showToast(mContext, R.string.update_downloading, Toast.LENGTH_SHORT);
             return;
         }
-        mCheckingDialog = DialogCreater.showWaitingDialog(mContext, mResources.getString(R.string.update_check_tips));
-        mCheckingDialog.show();
         // 此Handler用于Service检测更新/下载更新结果回调通知
         mUpdateManager.setUIHandler(mUIHandler);
         mUpdateManager.checkUpdate();
+        mCheckingDialog = DialogCreater.showWaitingDialog(mContext, mResources.getString(R.string.update_check_tips));
+        mCheckingDialog.show();
     }
 
     private void showVersionName() {

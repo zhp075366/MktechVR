@@ -111,6 +111,7 @@ public class UpdateManager implements OnClickListener {
     }
 
     public void unbindUpdateService() {
+        KLog.i("unbindUpdateService");
         mContext.unbindService(onUpdateServiceConnection);
         mUpdateService = null;
     }

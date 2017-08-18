@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,14 +13,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.HomeCategoryBean;
 import com.gotech.vrplayer.model.bean.HomeMultipleItemBean;
+import com.gotech.vrplayer.module.personal.update.UpdateManager;
+import com.gotech.vrplayer.module.personal.update.UpdateService;
 import com.gotech.vrplayer.module.video.detail.VideoDetailActivity;
 import com.gotech.vrplayer.utils.DensityUtil;
+import com.gotech.vrplayer.utils.NetworkUtil;
+import com.gotech.vrplayer.utils.ToastUtil;
 import com.jude.rollviewpager.OnItemClickListener;
 import com.jude.rollviewpager.RollPagerView;
 import com.jude.rollviewpager.hintview.ColorPointHintView;
@@ -45,6 +52,9 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     private LayoutInflater mInflater;
     private HomeMultipleItemAdapter mAdapter;
 
+    // APK更新管理器
+    private UpdateManager mUpdateManager;
+
     public static HomeFragment newInstance(String content) {
         Bundle args = new Bundle();
         args.putString("ARGS", content);
@@ -69,6 +79,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView();
+        initUpdateManager();
         mPresenter.getFirstLoadData();
     }
 
@@ -79,8 +90,17 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
         mPresenter.destroyPresenter();
+        if (mUpdateManager != null) {
+            mUpdateManager.setUIHandler(null);
+            UpdateService.UPDATE_SERVICE_STATE eState = mUpdateManager.getServiceState();
+            if (eState != UpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+                mUpdateManager.stopUpdateService();
+            }
+            mUpdateManager.unbindUpdateService();
+        }
+        mUIHandler.removeCallbacksAndMessages(null);
+        super.onDestroyView();
     }
 
     @Override
@@ -114,6 +134,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
             }
         });
         mAdapter.setNewData(data);
+        checkUpdate();
     }
 
     @Override
@@ -222,4 +243,45 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
         View view = mInflater.inflate(R.layout.layout_load_no_more, (ViewGroup)mRecyclerView.getParent(), false);
         mAdapter.addFooterView(view);
     }
+
+    private void initUpdateManager() {
+        mUpdateManager = new UpdateManager(mContext);
+        mUpdateManager.startUpdateService();
+        mUpdateManager.bindUpdateService();
+    }
+
+    public void checkUpdate() {
+        if (!NetworkUtil.checkNetworkConnection(mContext)) {
+            return;
+        }
+        UpdateService.UPDATE_SERVICE_STATE eState = mUpdateManager.getServiceState();
+        if (eState == UpdateService.UPDATE_SERVICE_STATE.CHECKING) {
+            return;
+        } else if (eState == UpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+            return;
+        }
+        // 此Handler用于Service检测更新/下载更新结果回调通知
+        mUpdateManager.setUIHandler(mUIHandler);
+        mUpdateManager.checkUpdate();
+    }
+
+    private Handler mUIHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
+                    UpdateService.CheckUpdateMsg updateMsg = (UpdateService.CheckUpdateMsg)msg.obj;
+                    if (updateMsg.eResult == UpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
+                        mUpdateManager.initDialogView();
+                        mUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
+                        mUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
+                    }
+                    break;
+                case UpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
+                    UpdateService.DownloadUpdateMsg downloadMsg = (UpdateService.DownloadUpdateMsg)msg.obj;
+                    ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
+                    break;
+            }
+        }
+    };
 }
