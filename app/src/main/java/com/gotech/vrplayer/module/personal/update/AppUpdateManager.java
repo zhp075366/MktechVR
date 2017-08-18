@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.AppUtil;
@@ -22,10 +21,6 @@ public class AppUpdateManager implements OnClickListener {
 
     private Context mContext;
     private CustomDialog mDialog;
-    private Button mBtnOK;
-    private Button mBtnCancel;
-    private TextView mTextTitle;
-    private TextView mTextContent;
     private LayoutInflater mInflater;
     private AppUpdateService mAppUpdateService;
 
@@ -41,10 +36,10 @@ public class AppUpdateManager implements OnClickListener {
     public void showUpdateDialog(String updateInfo) {
         View dialogView = mInflater.inflate(R.layout.dialog_update_tip, null);
         mDialog = DialogCreater.showDownloadDialog(mContext, dialogView, updateInfo);
-        mBtnOK = (Button)dialogView.findViewById(R.id.okButton);
-        mBtnCancel = (Button)dialogView.findViewById(R.id.cancelButton);
-        mBtnOK.setOnClickListener(this);
-        mBtnCancel.setOnClickListener(this);
+        Button btnOK = (Button)dialogView.findViewById(R.id.okButton);
+        Button btnCancel = (Button)dialogView.findViewById(R.id.cancelButton);
+        btnOK.setOnClickListener(this);
+        btnCancel.setOnClickListener(this);
         mDialog.show();
     }
 
