@@ -30,6 +30,7 @@
     <string name="update_check_tips">检测新版本...</string>
     <string name="update_checking">正在检测更新...</string>
     <string name="update_downloading">正在下载更新...</string>
+    <string name="update_start_download">开始下载更新</string>
     <string name="update_info_version">最新版本:&#160;</string>
     <string name="update_info_size">新版大小:&#160;%1$sMB</string>
     <string name="update_info_content">更新内容:&#160;</string>

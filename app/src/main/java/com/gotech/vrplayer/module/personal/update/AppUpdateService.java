@@ -82,6 +82,7 @@ public class AppUpdateService extends Service {
     private NotificationManager mNotificationManager;
 
     // 检测更新任务
+    private boolean mIsHomeCheck;
     private AsyncTaskWrapper<Void, Void, CheckUpdateMsg> mCheckUpdateTask;
     private AsyncTaskWrapper.OnLoadListener<Void, Void, CheckUpdateMsg> mCheckUpdateListener;
     // 下载更新任务
@@ -134,7 +135,8 @@ public class AppUpdateService extends Service {
         mDownloadUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 
-    public void startCheckUpdate() {
+    public void startCheckUpdate(boolean isHomeCheck) {
+        mIsHomeCheck = isHomeCheck;
         mCheckUpdateTask = new AsyncTaskWrapper<>();
         mCheckUpdateTask.setTaskTag("CheckUpdateTask");
         mCheckUpdateTask.setOnTaskListener(mCheckUpdateListener);
@@ -198,38 +200,24 @@ public class AppUpdateService extends Service {
         Intent intent = new Intent();
         PendingIntent intentContent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mNotificationManager = (NotificationManager)mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= 11) {
-            mNBuilder = new Notification.Builder(mContext);
-            mNBuilder.setOngoing(true);
-            mNBuilder.setAutoCancel(false);
-            mNBuilder.setContentIntent(intentContent);
-            mNBuilder.setSmallIcon(R.mipmap.ic_launcher);
-            mNBuilder.setTicker(mResources.getString(R.string.notification_title));
-            mNBuilder.setContentTitle(mResources.getString(R.string.notification_title));
-        } else {
-            mNotification = new Notification();
-            mNotification.icon = R.mipmap.ic_download;
-            mNotification.tickerText = mResources.getString(R.string.notification_title);
-            mNotification.contentIntent = intentContent;
-        }
-        this.notifyDownloadProgress(0);
+        mNBuilder = new Notification.Builder(mContext);
+        mNBuilder.setOngoing(true);
+        mNBuilder.setAutoCancel(false);
+        mNBuilder.setContentIntent(intentContent);
+        mNBuilder.setSmallIcon(R.mipmap.ic_launcher);
+        mNBuilder.setTicker(mResources.getString(R.string.notification_title));
+        mNBuilder.setContentTitle(mResources.getString(R.string.notification_title));
+        notifyDownloadProgress(0);
     }
 
     @SuppressWarnings("deprecation")
     private void notifyDownloadProgress(int progress) {
-        if (Build.VERSION.SDK_INT >= 11) {
-            mNBuilder.setContentText(progress + "%");
-            mNBuilder.setProgress(100, progress, false);
-            if (Build.VERSION.SDK_INT >= 16) {
-                mNotification = mNBuilder.build();
-            } else {
-                mNotification = mNBuilder.getNotification();
-            }
+        mNBuilder.setContentText(progress + "%");
+        mNBuilder.setProgress(100, progress, false);
+        if (Build.VERSION.SDK_INT >= 16) {
+            mNotification = mNBuilder.build();
         } else {
-            RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.layout_download_notification);
-            remoteViews.setProgressBar(R.id.notificationProgress, 100, progress, false);
-            remoteViews.setTextViewText(R.id.notificationPercent, progress + "%");
-            mNotification.contentView = remoteViews;
+            mNotification = mNBuilder.getNotification();
         }
         mNotificationManager.notify(0, mNotification);
     }
@@ -248,7 +236,9 @@ public class AppUpdateService extends Service {
 
             @Override
             public void onResult(Object taskTag, CheckUpdateMsg checkUpdateMsg) {
-                setServiceState(UPDATE_SERVICE_STATE.IDLE);
+                if (checkUpdateMsg.eResult != CHECK_UPDATE_RESULT.HAVE_UPDATE) {
+                    setServiceState(UPDATE_SERVICE_STATE.IDLE);
+                }
                 sendCheckResultMessage(AUTO_UPDATE_CHECKING_COMPLETE, checkUpdateMsg);
             }
 
@@ -273,13 +263,12 @@ public class AppUpdateService extends Service {
 
             @Override
             public void onCancel(Object taskTag) {
-
+                setServiceState(UPDATE_SERVICE_STATE.IDLE);
             }
 
             @Override
             public void onResult(Object taskTag, DownloadUpdateMsg downloadUpdateMsg) {
                 mNotificationManager.cancel(0);
-                setServiceState(UPDATE_SERVICE_STATE.IDLE);
                 if (downloadUpdateMsg.eResult == DOWNLOAD_UPDATE_RESULT.FAIL) {
                     downloadUpdateMsg.strDownloadResult = mResources.getString(R.string.update_failed_msg);
                     sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
@@ -288,6 +277,7 @@ public class AppUpdateService extends Service {
                     sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
                     installPackage();
                 }
+                setServiceState(UPDATE_SERVICE_STATE.IDLE);
             }
 
             @Override
@@ -309,7 +299,7 @@ public class AppUpdateService extends Service {
         try {
             PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
             int nCurVersionCode = packageInfo.versionCode;
-            String updateDetail = getUpdateDetail();
+            String updateDetail = getUpdateConfig();
             JSONArray arr = new JSONArray(updateDetail);
             if (arr.length() > 0) {
                 JSONObject obj = arr.getJSONObject(0);
@@ -332,11 +322,13 @@ public class AppUpdateService extends Service {
                     resultMsg.eResult = CHECK_UPDATE_RESULT.NO_UPDATE;
                 }
             }
-        } catch (SocketTimeoutException e) {
+        }
+        catch (SocketTimeoutException e) {
             e.printStackTrace();
             resultMsg.eResult = CHECK_UPDATE_RESULT.TIMEOUT;
             KLog.e("CheckUpdate ConnectTimeoutException");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             resultMsg.eResult = CHECK_UPDATE_RESULT.EXCEPTION;
             KLog.e("CheckUpdate OtherException");
@@ -344,17 +336,21 @@ public class AppUpdateService extends Service {
         return resultMsg;
     }
 
-    private String getUpdateDetail() throws Exception {
+    private String getUpdateConfig() throws Exception {
         String detailInfo = "";
         String charset = "UTF-8";
         HttpURLConnection urlConnection = null;
         BufferedReader bufferedReader = null;
+        int timeout = 5000;
+        if (mIsHomeCheck) {
+            timeout = 1000;
+        }
         try {
             URL url = new URL(SERVER_ROOT + UPDATE_CFG_FILE);
             urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoInput(true);
-            urlConnection.setReadTimeout(5000);
-            urlConnection.setConnectTimeout(5000);
+            urlConnection.setReadTimeout(timeout);
+            urlConnection.setConnectTimeout(timeout);
             urlConnection.setRequestMethod("GET");
             urlConnection.setRequestProperty("Content-Type", "text/plain;charset=utf-8");
             urlConnection.connect();
@@ -374,14 +370,16 @@ public class AppUpdateService extends Service {
                 KLog.e("ResponseCode:" + responseCode + ", msg:" + urlConnection.getResponseMessage());
                 throw new Exception();
             }
-        } finally {
+        }
+        finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
             if (bufferedReader != null) {
                 try {
                     bufferedReader.close();
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     KLog.e(e.getMessage());
                 }
             }
@@ -400,7 +398,8 @@ public class AppUpdateService extends Service {
             RandomAccessFile out = new RandomAccessFile(file, "rwd");
             out.setLength(mAPKLentgh);
             out.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
             KLog.e("createDownloadFile error");
             return false;
@@ -479,30 +478,35 @@ public class AppUpdateService extends Service {
                             bDownloadComplete = true;
                             break;
                         }
-                    } while (true);
+                    }while (true);
                 } else {
                     KLog.e("ResponseCode:" + nResponseCode + ", msg:" + urlConnection.getResponseMessage() + " retry...");
                 }
-            } catch (SocketTimeoutException e) {
+            }
+            catch (SocketTimeoutException e) {
                 retryCount--;
                 e.printStackTrace();
                 KLog.e("DownloadUpdate SocketTimeoutException retry");
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 retryCount--;
                 e.printStackTrace();
                 KLog.e("DownloadUpdate IOException retry");
-            } finally {
+            }
+            finally {
                 if (in != null) {
                     try {
                         in.close();
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
                 if (raFile != null) {
                     try {
                         raFile.close();
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         e.printStackTrace();
                     }
                 }

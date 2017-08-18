@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
-import com.gotech.vrplayer.module.personal.update.DialogCreater;
 import com.gotech.vrplayer.module.personal.update.AppUpdateManager;
 import com.gotech.vrplayer.module.personal.update.AppUpdateService;
 import com.gotech.vrplayer.utils.NetworkUtil;
@@ -111,9 +110,8 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
         }
         // 此Handler用于Service检测更新/下载更新结果回调通知
         mAppUpdateManager.setUIHandler(mUIHandler);
-        mAppUpdateManager.checkUpdate();
-        mCheckingDialog = DialogCreater.showWaitingDialog(mContext, mResources.getString(R.string.update_check_tips));
-        mCheckingDialog.show();
+        mAppUpdateManager.checkUpdate(false);
+        mAppUpdateManager.showCheckingDialog(mResources.getString(R.string.update_check_tips));
     }
 
     private void showVersionName() {
@@ -132,14 +130,11 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case AppUpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
-                    if (mCheckingDialog != null && mCheckingDialog.isShowing()) {
-                        mCheckingDialog.dismiss();
-                        mCheckingDialog = null;
-                    }
+                    mAppUpdateManager.dismissCheckingDialog();
                     AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
                     if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
                         mAppUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
-                        mAppUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
+                        mAppUpdateManager.showDownloadDialog(updateMsg.strCheckResult);
                     } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE) {
                         ToastUtil.showToast(mContext, R.string.update_already_new, Toast.LENGTH_SHORT);
                     } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.TIMEOUT) {

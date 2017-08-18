@@ -94,10 +94,11 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
         if (mAppUpdateManager != null) {
             mAppUpdateManager.setUIHandler(null);
             AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateManager.getServiceState();
+            mAppUpdateManager.unbindUpdateService();
             if (eState != AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
                 mAppUpdateManager.stopUpdateService();
             }
-            mAppUpdateManager.unbindUpdateService();
+
         }
         mUIHandler.removeCallbacksAndMessages(null);
         super.onDestroyView();
@@ -255,14 +256,12 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
             return;
         }
         AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateManager.getServiceState();
-        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
-            return;
-        } else if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
             return;
         }
         // 此Handler用于Service检测更新/下载更新结果回调通知
         mAppUpdateManager.setUIHandler(mUIHandler);
-        mAppUpdateManager.checkUpdate();
+        mAppUpdateManager.checkUpdate(true);
     }
 
     private Handler mUIHandler = new Handler() {
@@ -273,7 +272,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
                     AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
                     if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
                         mAppUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
-                        mAppUpdateManager.showUpdateDialog(updateMsg.strCheckResult);
+                        mAppUpdateManager.showDownloadDialog(updateMsg.strCheckResult);
                     }
                     break;
                 case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:

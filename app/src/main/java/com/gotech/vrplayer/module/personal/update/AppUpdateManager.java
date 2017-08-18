@@ -1,27 +1,29 @@
 package com.gotech.vrplayer.module.personal.update;
 
-import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.AppUtil;
+import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.CustomDialog;
 import com.socks.library.KLog;
 
 public class AppUpdateManager implements OnClickListener {
 
     private Context mContext;
-    private CustomDialog mDialog;
-    private LayoutInflater mInflater;
+    private Dialog mCheckingDialog;
+    private Dialog mDownloadDialog;
     private AppUpdateService mAppUpdateService;
 
     private int mAppSize;
@@ -29,18 +31,6 @@ public class AppUpdateManager implements OnClickListener {
 
     public AppUpdateManager(Context context) {
         mContext = context;
-        mInflater = LayoutInflater.from(mContext);
-    }
-
-    @SuppressLint("InflateParams")
-    public void showUpdateDialog(String updateInfo) {
-        View dialogView = mInflater.inflate(R.layout.dialog_update_tip, null);
-        mDialog = DialogCreater.showDownloadDialog(mContext, dialogView, updateInfo);
-        Button btnOK = (Button)dialogView.findViewById(R.id.okButton);
-        Button btnCancel = (Button)dialogView.findViewById(R.id.cancelButton);
-        btnOK.setOnClickListener(this);
-        btnCancel.setOnClickListener(this);
-        mDialog.show();
     }
 
     public void saveAppInfo(String appMd5, int fileLength) {
@@ -56,8 +46,8 @@ public class AppUpdateManager implements OnClickListener {
         mAppUpdateService.setUIHandler(handler);
     }
 
-    public void checkUpdate() {
-        mAppUpdateService.startCheckUpdate();
+    public void checkUpdate(boolean isHomeCheck) {
+        mAppUpdateService.startCheckUpdate(isHomeCheck);
     }
 
     private ServiceConnection onUpdateServiceConnection = new ServiceConnection() {
@@ -112,22 +102,55 @@ public class AppUpdateManager implements OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.okButton:
-                if (mDialog.isShowing()) {
-                    mDialog.dismiss();
+                if (mDownloadDialog != null && mDownloadDialog.isShowing()) {
+                    mDownloadDialog.dismiss();
+                    mDownloadDialog = null;
                     if (mAppUpdateService != null) {
                         mAppUpdateService.initNotification();
                         mAppUpdateService.startDownloadApp(mAppMD5, mAppSize);
+                        mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG);
+                        ToastUtil.showToast(mContext, R.string.update_start_download, Toast.LENGTH_SHORT);
                     }
                 }
                 break;
             case R.id.cancelButton:
-                if (mDialog.isShowing()) {
-                    mDialog.dismiss();
+                if (mDownloadDialog != null && mDownloadDialog.isShowing()) {
+                    mDownloadDialog.dismiss();
+                    mDownloadDialog = null;
                     if (mAppUpdateService != null) {
                         mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
                     }
                 }
                 break;
+        }
+    }
+
+    public void showDownloadDialog(String updateInfo) {
+        View view = View.inflate(mContext, R.layout.dialog_update_tip, null);
+        TextView textContent = (TextView)view.findViewById(R.id.text_content);
+        textContent.setText(updateInfo);
+        Button btnOK = (Button)view.findViewById(R.id.okButton);
+        Button btnCancel = (Button)view.findViewById(R.id.cancelButton);
+        btnOK.setOnClickListener(this);
+        btnCancel.setOnClickListener(this);
+        mDownloadDialog = new CustomDialog(mContext, view, R.style.UpdateDialog);
+        mDownloadDialog.setCancelable(false);
+        mDownloadDialog.show();
+    }
+
+    public void showCheckingDialog(String tipInfo) {
+        View view = View.inflate(mContext, R.layout.dialog_check_update, null);
+        TextView textTip = (TextView)view.findViewById(R.id.tvTip);
+        textTip.setText(tipInfo);
+        mCheckingDialog = new CustomDialog(mContext, view, R.style.WaitDialog);
+        mCheckingDialog.setCancelable(false);
+        mCheckingDialog.show();
+    }
+
+    public void dismissCheckingDialog() {
+        if (mCheckingDialog != null && mCheckingDialog.isShowing()) {
+            mCheckingDialog.dismiss();
+            mCheckingDialog = null;
         }
     }
 }

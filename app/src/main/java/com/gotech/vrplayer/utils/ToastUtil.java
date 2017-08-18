@@ -22,7 +22,7 @@ public class ToastUtil {
         }
     }
 
-    // 取消Toast
+    // 取消一个Toast
     public static void cancelToast() {
         if (mToast != null) {
             mToast.cancel();
@@ -39,9 +39,7 @@ public class ToastUtil {
     // 取消上一条Toast
     private static void toast(Context context, String content, int time) {
         cancelToast();
-        if (context != null) {
-            mToast = Toast.makeText(context, content, time);
-            mToast.show();
-        }
+        mToast = Toast.makeText(context, content, time);
+        mToast.show();
     }
 }
