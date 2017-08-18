@@ -36,7 +36,7 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 
-public class UpdateService extends Service {
+public class AppUpdateService extends Service {
 
     private Handler mUIHandler;
     private Context mContext;
@@ -102,7 +102,7 @@ public class UpdateService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mContext = UpdateService.this;
+        mContext = AppUpdateService.this;
         mResources = mContext.getResources();
         KLog.i("updateService onCreate");
     }
@@ -154,8 +154,8 @@ public class UpdateService extends Service {
     }
 
     public class UpdateServiceBinder extends Binder {
-        public UpdateService getService() {
-            return UpdateService.this;
+        public AppUpdateService getService() {
+            return AppUpdateService.this;
         }
     }
 

@@ -36,7 +36,7 @@
             android:theme="@style/FullscreenTheme">
         </activity>
 
-        <service android:name=".module.personal.update.UpdateService">
+        <service android:name=".module.personal.update.AppUpdateService">
         </service>
 
     </application>

@@ -20,7 +20,7 @@ public class DialogCreater {
     }
 
     public static CustomDialog showWaitingDialog(Context context, String tip) {
-        View view = View.inflate(context, R.layout.dialog_waitting, null);
+        View view = View.inflate(context, R.layout.dialog_check_update, null);
         if (!TextUtils.isEmpty(tip)) {
             ((TextView)view.findViewById(R.id.tvTip)).setText(tip);
         } else {

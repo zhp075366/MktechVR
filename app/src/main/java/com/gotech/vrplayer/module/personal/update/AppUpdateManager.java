@@ -18,7 +18,7 @@ import com.gotech.vrplayer.utils.AppUtil;
 import com.gotech.vrplayer.widget.CustomDialog;
 import com.socks.library.KLog;
 
-public class UpdateManager implements OnClickListener {
+public class AppUpdateManager implements OnClickListener {
 
     private Context mContext;
     private CustomDialog mDialog;
@@ -27,12 +27,12 @@ public class UpdateManager implements OnClickListener {
     private TextView mTextTitle;
     private TextView mTextContent;
     private LayoutInflater mInflater;
-    private UpdateService mUpdateService;
+    private AppUpdateService mAppUpdateService;
 
     private int mAppSize;
     private String mAppMD5;
 
-    public UpdateManager(Context context) {
+    public AppUpdateManager(Context context) {
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
     }
@@ -53,50 +53,50 @@ public class UpdateManager implements OnClickListener {
         mAppSize = fileLength;
     }
 
-    public UpdateService.UPDATE_SERVICE_STATE getServiceState() {
-        return mUpdateService.getServiceState();
+    public AppUpdateService.UPDATE_SERVICE_STATE getServiceState() {
+        return mAppUpdateService.getServiceState();
     }
 
     public void setUIHandler(Handler handler) {
-        mUpdateService.setUIHandler(handler);
+        mAppUpdateService.setUIHandler(handler);
     }
 
     public void checkUpdate() {
-        mUpdateService.startCheckUpdate();
+        mAppUpdateService.startCheckUpdate();
     }
 
     private ServiceConnection onUpdateServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
             KLog.i("updateService bind ok");
-            mUpdateService = ((UpdateService.UpdateServiceBinder)binder).getService();
+            mAppUpdateService = ((AppUpdateService.UpdateServiceBinder)binder).getService();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             KLog.e("updateService bind error");
-            mUpdateService = null;
+            mAppUpdateService = null;
         }
     };
 
     public void startUpdateService() {
-        if (AppUtil.isServiceRunning(mContext, UpdateService.class.getName())) {
+        if (AppUtil.isServiceRunning(mContext, AppUpdateService.class.getName())) {
             KLog.e("updateService is running");
             return;
         }
         KLog.e("updateService is not running");
-        Intent intent = new Intent(mContext, UpdateService.class);
+        Intent intent = new Intent(mContext, AppUpdateService.class);
         KLog.i("start updateService");
         mContext.startService(intent);
     }
 
     public void stopUpdateService() {
-        if (!AppUtil.isServiceRunning(mContext, UpdateService.class.getName())) {
+        if (!AppUtil.isServiceRunning(mContext, AppUpdateService.class.getName())) {
             KLog.e("updateService is not running");
             return;
         }
         KLog.e("updateService is running");
-        Intent intent = new Intent(mContext, UpdateService.class);
+        Intent intent = new Intent(mContext, AppUpdateService.class);
         KLog.i("stop updateService");
         mContext.stopService(intent);
     }
@@ -104,12 +104,12 @@ public class UpdateManager implements OnClickListener {
     public void unbindUpdateService() {
         KLog.i("unbindUpdateService");
         mContext.unbindService(onUpdateServiceConnection);
-        mUpdateService = null;
+        mAppUpdateService = null;
     }
 
     public void bindUpdateService() {
         KLog.i("bind updateService");
-        Intent intentBackupService = new Intent(mContext, UpdateService.class);
+        Intent intentBackupService = new Intent(mContext, AppUpdateService.class);
         mContext.bindService(intentBackupService, onUpdateServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -119,17 +119,17 @@ public class UpdateManager implements OnClickListener {
             case R.id.okButton:
                 if (mDialog.isShowing()) {
                     mDialog.dismiss();
-                    if (mUpdateService != null) {
-                        mUpdateService.initNotification();
-                        mUpdateService.startDownloadApp(mAppMD5, mAppSize);
+                    if (mAppUpdateService != null) {
+                        mAppUpdateService.initNotification();
+                        mAppUpdateService.startDownloadApp(mAppMD5, mAppSize);
                     }
                 }
                 break;
             case R.id.cancelButton:
                 if (mDialog.isShowing()) {
                     mDialog.dismiss();
-                    if (mUpdateService != null) {
-                        mUpdateService.setServiceState(UpdateService.UPDATE_SERVICE_STATE.IDLE);
+                    if (mAppUpdateService != null) {
+                        mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
                     }
                 }
                 break;
