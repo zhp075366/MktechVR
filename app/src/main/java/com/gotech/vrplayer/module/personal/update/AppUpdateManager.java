@@ -1,6 +1,5 @@
 package com.gotech.vrplayer.module.personal.update;
 
-import android.app.Application;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,11 +20,10 @@ import com.gotech.vrplayer.utils.AppUtil;
 import com.gotech.vrplayer.utils.NetworkUtil;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.CustomDialog;
-import com.socks.library.KLog;
 
 public class AppUpdateManager implements OnClickListener {
 
-    private Application mContext;
+    private Context mContext;
     private Resources mResources;
     private Dialog mCheckingDialog;
     private Dialog mDownloadDialog;
@@ -33,19 +31,11 @@ public class AppUpdateManager implements OnClickListener {
 
     private int mAppSize;
     private String mAppMD5;
-    private volatile boolean mIsHomeCheck;
+    // 打开App默认为HomeCheck一次
+    private boolean mIsHomeCheck = true;
 
-    // 静态内部类单例模式
-    private static final class SingletonHolder {
-        private static final AppUpdateManager sInstance = new AppUpdateManager();
-    }
-
-    public static AppUpdateManager getInstance() {
-        return SingletonHolder.sInstance;
-    }
-
-    public void init(Application app) {
-        mContext = app;
+    public void init(Context context) {
+        mContext = context;
         mResources = mContext.getResources();
         startUpdateService();
         bindUpdateService();
@@ -59,7 +49,6 @@ public class AppUpdateManager implements OnClickListener {
         if (eState != AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
             stopUpdateService();
         }
-
     }
 
     public void checkUpdate(boolean isHomeCheck) {
@@ -77,6 +66,10 @@ public class AppUpdateManager implements OnClickListener {
             }
             return;
         }
+        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
+            ToastUtil.showToast(mContext, R.string.update_checking, Toast.LENGTH_SHORT);
+            return;
+        }
         if (!mIsHomeCheck) {
             showCheckingDialog(mResources.getString(R.string.update_check_tips));
         }
@@ -86,48 +79,38 @@ public class AppUpdateManager implements OnClickListener {
     private ServiceConnection onUpdateServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
-            KLog.i("updateService bind ok");
             mAppUpdateService = ((AppUpdateService.UpdateServiceBinder)binder).getService();
             mAppUpdateService.setUIHandler(mUIHandler);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            KLog.e("updateService bind error");
             mAppUpdateService = null;
         }
     };
 
     private void startUpdateService() {
         if (AppUtil.isServiceRunning(mContext, AppUpdateService.class.getName())) {
-            KLog.e("updateService is running");
             return;
         }
-        KLog.e("updateService is not running");
         Intent intent = new Intent(mContext, AppUpdateService.class);
-        KLog.i("start updateService");
         mContext.startService(intent);
     }
 
     private void stopUpdateService() {
         if (!AppUtil.isServiceRunning(mContext, AppUpdateService.class.getName())) {
-            KLog.e("updateService is not running");
             return;
         }
-        KLog.e("updateService is running");
         Intent intent = new Intent(mContext, AppUpdateService.class);
-        KLog.i("stop updateService");
         mContext.stopService(intent);
     }
 
     private void unbindUpdateService() {
-        KLog.i("unbindUpdateService");
         mContext.unbindService(onUpdateServiceConnection);
         mAppUpdateService = null;
     }
 
     private void bindUpdateService() {
-        KLog.i("bind updateService");
         Intent intentBackupService = new Intent(mContext, AppUpdateService.class);
         mContext.bindService(intentBackupService, onUpdateServiceConnection, Context.BIND_AUTO_CREATE);
     }
@@ -136,30 +119,21 @@ public class AppUpdateManager implements OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.okButton:
-                if (mDownloadDialog != null && mDownloadDialog.isShowing()) {
-                    mDownloadDialog.dismiss();
-                    mDownloadDialog = null;
-                    if (mAppUpdateService != null) {
-                        mAppUpdateService.initNotification();
-                        mAppUpdateService.startDownloadApp(mAppMD5, mAppSize);
-                        mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG);
-                        ToastUtil.showToast(mContext, R.string.update_start_download, Toast.LENGTH_SHORT);
-                    }
-                }
+                dismissDownloadDialog();
+                mAppUpdateService.initNotification();
+                mAppUpdateService.startDownloadUpdate(mAppMD5, mAppSize);
+                mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG);
+                ToastUtil.showToast(mContext, R.string.update_start_download, Toast.LENGTH_SHORT);
                 break;
             case R.id.cancelButton:
-                if (mDownloadDialog != null && mDownloadDialog.isShowing()) {
-                    mDownloadDialog.dismiss();
-                    mDownloadDialog = null;
-                    if (mAppUpdateService != null) {
-                        mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
-                    }
-                }
+                dismissDownloadDialog();
+                mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
                 break;
         }
     }
 
     private void showDownloadDialog(String updateInfo) {
+        dismissDownloadDialog();
         View view = View.inflate(mContext, R.layout.dialog_update_tip, null);
         TextView textContent = (TextView)view.findViewById(R.id.text_content);
         textContent.setText(updateInfo);
@@ -172,7 +146,15 @@ public class AppUpdateManager implements OnClickListener {
         mDownloadDialog.show();
     }
 
+    private void dismissDownloadDialog() {
+        if (mDownloadDialog != null && mDownloadDialog.isShowing()) {
+            mDownloadDialog.dismiss();
+            mDownloadDialog = null;
+        }
+    }
+
     private void showCheckingDialog(String tipInfo) {
+        dismissCheckingDialog();
         View view = View.inflate(mContext, R.layout.dialog_check_update, null);
         TextView textTip = (TextView)view.findViewById(R.id.tvTip);
         textTip.setText(tipInfo);
@@ -188,7 +170,7 @@ public class AppUpdateManager implements OnClickListener {
         }
     }
 
-    private void saveDownAppInfo(String appMd5, int fileLength) {
+    private void saveDownloadAppInfo(String appMd5, int fileLength) {
         mAppMD5 = appMd5;
         mAppSize = fileLength;
     }
@@ -203,7 +185,7 @@ public class AppUpdateManager implements OnClickListener {
                     }
                     AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
                     if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                        saveDownAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
+                        saveDownloadAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
                         showDownloadDialog(updateMsg.strCheckResult);
                     } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE && !mIsHomeCheck) {
                         ToastUtil.showToast(mContext, R.string.update_already_new, Toast.LENGTH_SHORT);

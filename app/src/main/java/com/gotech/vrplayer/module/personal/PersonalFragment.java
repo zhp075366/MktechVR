@@ -33,6 +33,8 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     RelativeLayout mFeedbackAdvice;
 
     private Context mContext;
+    // App更新管理器
+    private AppUpdateManager mAppUpdateManager;
 
     public static PersonalFragment newInstance(String arg) {
         Bundle args = new Bundle();
@@ -55,7 +57,15 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mAppUpdateManager = new AppUpdateManager();
+        mAppUpdateManager.init(mContext);
         showVersionName();
+    }
+
+    @Override
+    public void onDestroyView() {
+        mAppUpdateManager.destroy();
+        super.onDestroyView();
     }
 
     @Override
@@ -71,7 +81,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
 
     @OnClick(R.id.check_update)
     public void checkUpdate() {
-        AppUpdateManager.getInstance().checkUpdate(true);
+        mAppUpdateManager.checkUpdate(false);
     }
 
     private void showVersionName() {

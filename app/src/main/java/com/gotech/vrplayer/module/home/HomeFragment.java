@@ -45,6 +45,8 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     private Context mContext;
     private LayoutInflater mInflater;
     private HomeMultipleItemAdapter mAdapter;
+    // App更新管理器
+    private AppUpdateManager mAppUpdateManager;
 
     public static HomeFragment newInstance(String content) {
         Bundle args = new Bundle();
@@ -70,6 +72,8 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView();
+        mAppUpdateManager = new AppUpdateManager();
+        mAppUpdateManager.init(mContext);
         mPresenter.getFirstLoadData();
     }
 
@@ -81,7 +85,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     @Override
     public void onDestroyView() {
         mPresenter.destroyPresenter();
-        AppUpdateManager.getInstance().destroy();
+        mAppUpdateManager.destroy();
         super.onDestroyView();
     }
 
@@ -116,7 +120,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
             }
         });
         mAdapter.setNewData(data);
-        AppUpdateManager.getInstance().checkUpdate(true);
+        mAppUpdateManager.checkUpdate(true);
     }
 
     @Override

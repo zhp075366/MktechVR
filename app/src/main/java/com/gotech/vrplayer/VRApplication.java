@@ -31,7 +31,6 @@ public class VRApplication extends Application {
         initLeakCanary();
         KLog.init(true, GLOBAL_TAG);
         OkGo.getInstance().init(this);
-        AppUpdateManager.getInstance().init(this);
     }
 
     public static VRApplication getApplication() {

@@ -37,9 +37,9 @@ import java.net.URL;
 
 public class AppUpdateService extends Service {
 
-    private Handler mUIHandler;
     private Context mContext;
     private Resources mResources;
+    private volatile Handler mUIHandler;
     private UPDATE_SERVICE_STATE mServiceState;
     private UpdateServiceBinder mUpdateServiceBinder = new UpdateServiceBinder();
 
@@ -49,25 +49,25 @@ public class AppUpdateService extends Service {
     public static final int AUTO_UPDATE_DOWNLOADING_COMPLETE = AUTO_UPDATE_CHECKING_COMPLETE + 1;
 
     // 检测更新消息
-    public enum CHECK_UPDATE_RESULT {
+    enum CHECK_UPDATE_RESULT {
         TIMEOUT, EXCEPTION, NO_UPDATE, HAVE_UPDATE
     }
 
-    public class CheckUpdateMsg {
-        public int appSize;
-        public String strAppMd5;
-        public String strCheckResult;
-        public CHECK_UPDATE_RESULT eResult;
+    class CheckUpdateMsg {
+        int appSize;
+        String strAppMd5;
+        String strCheckResult;
+        CHECK_UPDATE_RESULT eResult;
     }
 
     // 下载更新消息
-    public enum DOWNLOAD_UPDATE_RESULT {
+    private enum DOWNLOAD_UPDATE_RESULT {
         FAIL, SUCCESS
     }
 
-    public class DownloadUpdateMsg {
-        public String strDownloadResult;
-        public DOWNLOAD_UPDATE_RESULT eResult;
+    class DownloadUpdateMsg {
+        String strDownloadResult;
+        DOWNLOAD_UPDATE_RESULT eResult;
     }
 
     // 服务器相关信息
@@ -124,7 +124,7 @@ public class AppUpdateService extends Service {
         mUIHandler = handler;
     }
 
-    public void startDownloadApp(String appMd5, int fileLength) {
+    public void startDownloadUpdate(String appMd5, int fileLength) {
         mAPKMD5 = appMd5;
         mAPKLentgh = fileLength;
         mDownloadUpdateTask = new AsyncTaskWrapper<>();
@@ -136,7 +136,7 @@ public class AppUpdateService extends Service {
     public void startCheckUpdate(boolean isHomeCheck) {
         mIsHomeCheck = isHomeCheck;
         mCheckUpdateTask = new AsyncTaskWrapper<>();
-        mCheckUpdateTask.setTaskTag("CheckUpdateTask");
+        mCheckUpdateTask.setTaskTag("CheckUpdate");
         mCheckUpdateTask.setOnTaskListener(mCheckUpdateListener);
         mCheckUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
@@ -153,8 +153,8 @@ public class AppUpdateService extends Service {
         }
     }
 
-    public class UpdateServiceBinder extends Binder {
-        public AppUpdateService getService() {
+    class UpdateServiceBinder extends Binder {
+        AppUpdateService getService() {
             return AppUpdateService.this;
         }
     }

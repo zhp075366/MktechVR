@@ -23,6 +23,10 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
         mTaskTag = taskTag;
     }
 
+    public Object getTaskTag() {
+        return mTaskTag;
+    }
+
     public void setOnTaskListener(OnLoadListener<Params, Progress, Result> listener) {
         mListener = listener;
     }
