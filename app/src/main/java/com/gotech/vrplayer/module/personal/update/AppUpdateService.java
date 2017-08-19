@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.widget.RemoteViews;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.AsyncTaskWrapper;
@@ -77,12 +76,11 @@ public class AppUpdateService extends Service {
     private static final String SERVER_ROOT = "http://192.168.10.32/ipc_update/";
 
     // 通知
-    private Notification mNotification;
     private Notification.Builder mNBuilder;
     private NotificationManager mNotificationManager;
 
     // 检测更新任务
-    private boolean mIsHomeCheck;
+    private volatile boolean mIsHomeCheck;
     private AsyncTaskWrapper<Void, Void, CheckUpdateMsg> mCheckUpdateTask;
     private AsyncTaskWrapper.OnLoadListener<Void, Void, CheckUpdateMsg> mCheckUpdateListener;
     // 下载更新任务
@@ -212,14 +210,15 @@ public class AppUpdateService extends Service {
 
     @SuppressWarnings("deprecation")
     private void notifyDownloadProgress(int progress) {
+        Notification notification;
         mNBuilder.setContentText(progress + "%");
         mNBuilder.setProgress(100, progress, false);
         if (Build.VERSION.SDK_INT >= 16) {
-            mNotification = mNBuilder.build();
+            notification = mNBuilder.build();
         } else {
-            mNotification = mNBuilder.getNotification();
+            notification = mNBuilder.getNotification();
         }
-        mNotificationManager.notify(0, mNotification);
+        mNotificationManager.notify(0, notification);
     }
 
     private void initCheckUpdateListener() {

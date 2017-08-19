@@ -1,25 +1,17 @@
 package com.gotech.vrplayer.module.personal;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.module.personal.update.AppUpdateManager;
-import com.gotech.vrplayer.module.personal.update.AppUpdateService;
-import com.gotech.vrplayer.utils.NetworkUtil;
-import com.gotech.vrplayer.utils.ToastUtil;
-import com.gotech.vrplayer.widget.CustomDialog;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -41,11 +33,6 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     RelativeLayout mFeedbackAdvice;
 
     private Context mContext;
-    private Resources mResources;
-    private CustomDialog mCheckingDialog;
-
-    // APK更新管理器
-    private AppUpdateManager mAppUpdateManager;
 
     public static PersonalFragment newInstance(String arg) {
         Bundle args = new Bundle();
@@ -69,17 +56,6 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         showVersionName();
-        initUpdateManager();
-    }
-
-    @Override
-    public void onDestroyView() {
-        if (mAppUpdateManager != null) {
-            mAppUpdateManager.setUIHandler(null);
-            mAppUpdateManager.unbindUpdateService();
-        }
-        mUIHandler.removeCallbacksAndMessages(null);
-        super.onDestroyView();
     }
 
     @Override
@@ -90,61 +66,16 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     @Override
     protected void createPresenter() {
         mContext = getContext();
-        mResources = mContext.getResources();
         mPresenter = new PersonalPresenter(mContext, this);
     }
 
     @OnClick(R.id.check_update)
     public void checkUpdate() {
-        if (!NetworkUtil.checkNetworkConnection(mContext)) {
-            ToastUtil.showToast(mContext, R.string.no_network_connect, Toast.LENGTH_SHORT);
-            return;
-        }
-        AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateManager.getServiceState();
-        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
-            ToastUtil.showToast(mContext, R.string.update_downloading, Toast.LENGTH_SHORT);
-            return;
-        }
-        // 此Handler用于Service检测更新/下载更新结果回调通知
-        mAppUpdateManager.setUIHandler(mUIHandler);
-        mAppUpdateManager.checkUpdate(false);
-        mAppUpdateManager.showCheckingDialog(mResources.getString(R.string.update_check_tips));
+        AppUpdateManager.getInstance().checkUpdate(true);
     }
 
     private void showVersionName() {
         String appVersion = mPresenter.getVersionName();
         mTvAppVersion.setText(appVersion);
     }
-
-    private void initUpdateManager() {
-        mAppUpdateManager = new AppUpdateManager(mContext);
-        mAppUpdateManager.startUpdateService();
-        mAppUpdateManager.bindUpdateService();
-    }
-
-    private Handler mUIHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case AppUpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
-                    mAppUpdateManager.dismissCheckingDialog();
-                    AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
-                    if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                        mAppUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
-                        mAppUpdateManager.showDownloadDialog(updateMsg.strCheckResult);
-                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE) {
-                        ToastUtil.showToast(mContext, R.string.update_already_new, Toast.LENGTH_SHORT);
-                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.TIMEOUT) {
-                        ToastUtil.showToast(mContext, R.string.update_check_timeout, Toast.LENGTH_SHORT);
-                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.EXCEPTION) {
-                        ToastUtil.showToast(mContext, R.string.update_check_exception, Toast.LENGTH_SHORT);
-                    }
-                    break;
-                case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
-                    AppUpdateService.DownloadUpdateMsg downloadMsg = (AppUpdateService.DownloadUpdateMsg)msg.obj;
-                    ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
-                    break;
-            }
-        }
-    };
 }

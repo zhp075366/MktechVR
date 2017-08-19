@@ -1,12 +1,15 @@
 package com.gotech.vrplayer.module.personal.update;
 
+import android.app.Application;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -15,39 +18,69 @@ import android.widget.Toast;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.AppUtil;
+import com.gotech.vrplayer.utils.NetworkUtil;
 import com.gotech.vrplayer.utils.ToastUtil;
 import com.gotech.vrplayer.widget.CustomDialog;
 import com.socks.library.KLog;
 
 public class AppUpdateManager implements OnClickListener {
 
-    private Context mContext;
+    private Application mContext;
+    private Resources mResources;
     private Dialog mCheckingDialog;
     private Dialog mDownloadDialog;
     private AppUpdateService mAppUpdateService;
 
     private int mAppSize;
     private String mAppMD5;
+    private volatile boolean mIsHomeCheck;
 
-    public AppUpdateManager(Context context) {
-        mContext = context;
+    // 静态内部类单例模式
+    private static final class SingletonHolder {
+        private static final AppUpdateManager sInstance = new AppUpdateManager();
     }
 
-    public void saveAppInfo(String appMd5, int fileLength) {
-        mAppMD5 = appMd5;
-        mAppSize = fileLength;
+    public static AppUpdateManager getInstance() {
+        return SingletonHolder.sInstance;
     }
 
-    public AppUpdateService.UPDATE_SERVICE_STATE getServiceState() {
-        return mAppUpdateService.getServiceState();
+    public void init(Application app) {
+        mContext = app;
+        mResources = mContext.getResources();
+        startUpdateService();
+        bindUpdateService();
     }
 
-    public void setUIHandler(Handler handler) {
-        mAppUpdateService.setUIHandler(handler);
+    public void destroy() {
+        mAppUpdateService.setUIHandler(null);
+        mUIHandler.removeCallbacksAndMessages(null);
+        AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateService.getServiceState();
+        unbindUpdateService();
+        if (eState != AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+            stopUpdateService();
+        }
+
     }
 
     public void checkUpdate(boolean isHomeCheck) {
-        mAppUpdateService.startCheckUpdate(isHomeCheck);
+        mIsHomeCheck = isHomeCheck;
+        if (!NetworkUtil.checkNetworkConnection(mContext)) {
+            if (!mIsHomeCheck) {
+                ToastUtil.showToast(mContext, R.string.no_network_connect, Toast.LENGTH_SHORT);
+            }
+            return;
+        }
+        AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateService.getServiceState();
+        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+            if (!mIsHomeCheck) {
+                ToastUtil.showToast(mContext, R.string.update_downloading, Toast.LENGTH_SHORT);
+            }
+            return;
+        }
+        if (!mIsHomeCheck) {
+            showCheckingDialog(mResources.getString(R.string.update_check_tips));
+        }
+        mAppUpdateService.startCheckUpdate(mIsHomeCheck);
     }
 
     private ServiceConnection onUpdateServiceConnection = new ServiceConnection() {
@@ -55,6 +88,7 @@ public class AppUpdateManager implements OnClickListener {
         public void onServiceConnected(ComponentName name, IBinder binder) {
             KLog.i("updateService bind ok");
             mAppUpdateService = ((AppUpdateService.UpdateServiceBinder)binder).getService();
+            mAppUpdateService.setUIHandler(mUIHandler);
         }
 
         @Override
@@ -64,7 +98,7 @@ public class AppUpdateManager implements OnClickListener {
         }
     };
 
-    public void startUpdateService() {
+    private void startUpdateService() {
         if (AppUtil.isServiceRunning(mContext, AppUpdateService.class.getName())) {
             KLog.e("updateService is running");
             return;
@@ -75,7 +109,7 @@ public class AppUpdateManager implements OnClickListener {
         mContext.startService(intent);
     }
 
-    public void stopUpdateService() {
+    private void stopUpdateService() {
         if (!AppUtil.isServiceRunning(mContext, AppUpdateService.class.getName())) {
             KLog.e("updateService is not running");
             return;
@@ -86,13 +120,13 @@ public class AppUpdateManager implements OnClickListener {
         mContext.stopService(intent);
     }
 
-    public void unbindUpdateService() {
+    private void unbindUpdateService() {
         KLog.i("unbindUpdateService");
         mContext.unbindService(onUpdateServiceConnection);
         mAppUpdateService = null;
     }
 
-    public void bindUpdateService() {
+    private void bindUpdateService() {
         KLog.i("bind updateService");
         Intent intentBackupService = new Intent(mContext, AppUpdateService.class);
         mContext.bindService(intentBackupService, onUpdateServiceConnection, Context.BIND_AUTO_CREATE);
@@ -125,7 +159,7 @@ public class AppUpdateManager implements OnClickListener {
         }
     }
 
-    public void showDownloadDialog(String updateInfo) {
+    private void showDownloadDialog(String updateInfo) {
         View view = View.inflate(mContext, R.layout.dialog_update_tip, null);
         TextView textContent = (TextView)view.findViewById(R.id.text_content);
         textContent.setText(updateInfo);
@@ -138,7 +172,7 @@ public class AppUpdateManager implements OnClickListener {
         mDownloadDialog.show();
     }
 
-    public void showCheckingDialog(String tipInfo) {
+    private void showCheckingDialog(String tipInfo) {
         View view = View.inflate(mContext, R.layout.dialog_check_update, null);
         TextView textTip = (TextView)view.findViewById(R.id.tvTip);
         textTip.setText(tipInfo);
@@ -147,10 +181,43 @@ public class AppUpdateManager implements OnClickListener {
         mCheckingDialog.show();
     }
 
-    public void dismissCheckingDialog() {
+    private void dismissCheckingDialog() {
         if (mCheckingDialog != null && mCheckingDialog.isShowing()) {
             mCheckingDialog.dismiss();
             mCheckingDialog = null;
         }
     }
+
+    private void saveDownAppInfo(String appMd5, int fileLength) {
+        mAppMD5 = appMd5;
+        mAppSize = fileLength;
+    }
+
+    private Handler mUIHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case AppUpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
+                    if (!mIsHomeCheck) {
+                        dismissCheckingDialog();
+                    }
+                    AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
+                    if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
+                        saveDownAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
+                        showDownloadDialog(updateMsg.strCheckResult);
+                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE && !mIsHomeCheck) {
+                        ToastUtil.showToast(mContext, R.string.update_already_new, Toast.LENGTH_SHORT);
+                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.TIMEOUT && !mIsHomeCheck) {
+                        ToastUtil.showToast(mContext, R.string.update_check_timeout, Toast.LENGTH_SHORT);
+                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.EXCEPTION && !mIsHomeCheck) {
+                        ToastUtil.showToast(mContext, R.string.update_check_exception, Toast.LENGTH_SHORT);
+                    }
+                    break;
+                case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
+                    AppUpdateService.DownloadUpdateMsg downloadMsg = (AppUpdateService.DownloadUpdateMsg)msg.obj;
+                    ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
+                    break;
+            }
+        }
+    };
 }

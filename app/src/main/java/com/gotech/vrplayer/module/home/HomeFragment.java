@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.gotech.vrplayer.R;
@@ -21,11 +18,8 @@ import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.HomeCategoryBean;
 import com.gotech.vrplayer.model.bean.HomeMultipleItemBean;
 import com.gotech.vrplayer.module.personal.update.AppUpdateManager;
-import com.gotech.vrplayer.module.personal.update.AppUpdateService;
 import com.gotech.vrplayer.module.video.detail.VideoDetailActivity;
 import com.gotech.vrplayer.utils.DensityUtil;
-import com.gotech.vrplayer.utils.NetworkUtil;
-import com.gotech.vrplayer.utils.ToastUtil;
 import com.jude.rollviewpager.OnItemClickListener;
 import com.jude.rollviewpager.RollPagerView;
 import com.jude.rollviewpager.hintview.ColorPointHintView;
@@ -52,9 +46,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     private LayoutInflater mInflater;
     private HomeMultipleItemAdapter mAdapter;
 
-    // APK更新管理器
-    private AppUpdateManager mAppUpdateManager;
-
     public static HomeFragment newInstance(String content) {
         Bundle args = new Bundle();
         args.putString("ARGS", content);
@@ -79,7 +70,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView();
-        initUpdateManager();
         mPresenter.getFirstLoadData();
     }
 
@@ -91,15 +81,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     @Override
     public void onDestroyView() {
         mPresenter.destroyPresenter();
-        if (mAppUpdateManager != null) {
-            mAppUpdateManager.setUIHandler(null);
-            AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateManager.getServiceState();
-            mAppUpdateManager.unbindUpdateService();
-            if (eState != AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
-                mAppUpdateManager.stopUpdateService();
-            }
-        }
-        mUIHandler.removeCallbacksAndMessages(null);
+        AppUpdateManager.getInstance().destroy();
         super.onDestroyView();
     }
 
@@ -134,7 +116,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
             }
         });
         mAdapter.setNewData(data);
-        checkUpdate();
+        AppUpdateManager.getInstance().checkUpdate(true);
     }
 
     @Override
@@ -243,42 +225,4 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
         View view = mInflater.inflate(R.layout.layout_load_no_more, (ViewGroup)mRecyclerView.getParent(), false);
         mAdapter.addFooterView(view);
     }
-
-    private void initUpdateManager() {
-        mAppUpdateManager = new AppUpdateManager(mContext);
-        mAppUpdateManager.startUpdateService();
-        mAppUpdateManager.bindUpdateService();
-    }
-
-    public void checkUpdate() {
-        if (!NetworkUtil.checkNetworkConnection(mContext)) {
-            return;
-        }
-        AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateManager.getServiceState();
-        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
-            return;
-        }
-        // 此Handler用于Service检测更新/下载更新结果回调通知
-        mAppUpdateManager.setUIHandler(mUIHandler);
-        mAppUpdateManager.checkUpdate(true);
-    }
-
-    private Handler mUIHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case AppUpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
-                    AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
-                    if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                        mAppUpdateManager.saveAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
-                        mAppUpdateManager.showDownloadDialog(updateMsg.strCheckResult);
-                    }
-                    break;
-                case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
-                    AppUpdateService.DownloadUpdateMsg downloadMsg = (AppUpdateService.DownloadUpdateMsg)msg.obj;
-                    ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
-                    break;
-            }
-        }
-    };
 }

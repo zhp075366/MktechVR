@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.gotech.vrplayer.greendao.AppMRHOpenHelper;
 import com.gotech.vrplayer.greendao.DaoMaster;
 import com.gotech.vrplayer.greendao.DaoSession;
+import com.gotech.vrplayer.module.personal.update.AppUpdateManager;
 import com.gotech.vrplayer.utils.MigrationHelper;
 import com.lzy.okgo.OkGo;
 import com.socks.library.KLog;
@@ -30,6 +31,7 @@ public class VRApplication extends Application {
         initLeakCanary();
         KLog.init(true, GLOBAL_TAG);
         OkGo.getInstance().init(this);
+        AppUpdateManager.getInstance().init(this);
     }
 
     public static VRApplication getApplication() {
