@@ -52,6 +52,7 @@ public class AppUpdateManager implements OnClickListener {
     }
 
     public void checkUpdate(boolean isHomeCheck) {
+        mIsHomeCheck = isHomeCheck;
         if (!NetworkUtil.checkNetworkConnection(mContext)) {
             if (!mIsHomeCheck) {
                 ToastUtil.showToast(mContext, R.string.no_network_connect, Toast.LENGTH_SHORT);
@@ -65,7 +66,6 @@ public class AppUpdateManager implements OnClickListener {
             }
             return;
         }
-        mIsHomeCheck = isHomeCheck;
         if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
             if (!mIsHomeCheck) {
                 // 如果首页先检测，Setting后检测，直接沿用这次的检测好
