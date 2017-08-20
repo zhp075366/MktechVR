@@ -74,11 +74,12 @@ public class AppUpdateManager implements OnClickListener {
             // 如果Setting先检测，首页后检测，直接return没问题
             return;
         }
+        // 开始检测
         if (!mIsHomeCheck) {
             showCheckingDialog(mResources.getString(R.string.update_check_tips));
         }
         mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.CHECKING);
-        mAppUpdateService.startCheckUpdate(mIsHomeCheck);
+        mAppUpdateService.startCheckUpdate();
     }
 
     private ServiceConnection onUpdateServiceConnection = new ServiceConnection() {

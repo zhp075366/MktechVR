@@ -80,7 +80,6 @@ public class AppUpdateService extends Service {
     private NotificationManager mNotificationManager;
 
     // 检测更新任务
-    private volatile boolean mIsHomeCheck;
     private AsyncTaskWrapper<Void, Void, CheckUpdateMsg> mCheckUpdateTask;
     private AsyncTaskWrapper.OnLoadListener<Void, Void, CheckUpdateMsg> mCheckUpdateListener;
     // 下载更新任务
@@ -133,8 +132,7 @@ public class AppUpdateService extends Service {
         mDownloadUpdateTask.executeOnExecutor(AsyncTaskWrapper.THREAD_POOL_CACHED);
     }
 
-    public void startCheckUpdate(boolean isHomeCheck) {
-        mIsHomeCheck = isHomeCheck;
+    public void startCheckUpdate() {
         mCheckUpdateTask = new AsyncTaskWrapper<>();
         mCheckUpdateTask.setTaskTag("CheckUpdate");
         mCheckUpdateTask.setOnTaskListener(mCheckUpdateListener);
@@ -340,16 +338,12 @@ public class AppUpdateService extends Service {
         String charset = "UTF-8";
         HttpURLConnection urlConnection = null;
         BufferedReader bufferedReader = null;
-        int timeout = 5000;
-        if (mIsHomeCheck) {
-            timeout = 1000;
-        }
         try {
             URL url = new URL(SERVER_ROOT + UPDATE_CFG_FILE);
             urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoInput(true);
-            urlConnection.setReadTimeout(timeout);
-            urlConnection.setConnectTimeout(timeout);
+            urlConnection.setReadTimeout(5000);
+            urlConnection.setConnectTimeout(5000);
             urlConnection.setRequestMethod("GET");
             urlConnection.setRequestProperty("Content-Type", "text/plain;charset=utf-8");
             urlConnection.connect();
