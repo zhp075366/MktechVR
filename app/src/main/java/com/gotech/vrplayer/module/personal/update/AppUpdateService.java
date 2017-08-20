@@ -93,7 +93,7 @@ public class AppUpdateService extends Service {
     // Service状态获取锁
     private final Object mLock = new Object();
 
-    public enum UPDATE_SERVICE_STATE {
+    enum UPDATE_SERVICE_STATE {
         IDLE, CHECKING, DOWNLOADINIG
     }
 
