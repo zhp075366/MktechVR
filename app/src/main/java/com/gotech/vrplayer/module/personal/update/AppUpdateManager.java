@@ -52,7 +52,6 @@ public class AppUpdateManager implements OnClickListener {
     }
 
     public void checkUpdate(boolean isHomeCheck) {
-        mIsHomeCheck = isHomeCheck;
         if (!NetworkUtil.checkNetworkConnection(mContext)) {
             if (!mIsHomeCheck) {
                 ToastUtil.showToast(mContext, R.string.no_network_connect, Toast.LENGTH_SHORT);
@@ -66,13 +65,19 @@ public class AppUpdateManager implements OnClickListener {
             }
             return;
         }
+        mIsHomeCheck = isHomeCheck;
         if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
-            ToastUtil.showToast(mContext, R.string.update_checking, Toast.LENGTH_SHORT);
+            if (!mIsHomeCheck) {
+                // 如果首页先检测，Setting后检测，直接沿用这次的检测好
+                showCheckingDialog(mResources.getString(R.string.update_check_tips));
+            }
+            // 如果Setting先检测，首页后检测，直接return没问题
             return;
         }
         if (!mIsHomeCheck) {
             showCheckingDialog(mResources.getString(R.string.update_check_tips));
         }
+        mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.CHECKING);
         mAppUpdateService.startCheckUpdate(mIsHomeCheck);
     }
 
@@ -180,9 +185,7 @@ public class AppUpdateManager implements OnClickListener {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case AppUpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
-                    if (!mIsHomeCheck) {
-                        dismissCheckingDialog();
-                    }
+                    dismissCheckingDialog();
                     AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
                     if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
                         saveDownloadAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
