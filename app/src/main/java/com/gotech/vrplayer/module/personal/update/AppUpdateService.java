@@ -400,16 +400,6 @@ public class AppUpdateService extends Service {
         return true;
     }
 
-    private DownloadUpdateMsg downloadUpdateRun() {
-        if (!createDownloadFile()) {
-            DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
-            resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
-            return resultMsg;
-        }
-        boolean bSuccess = downloadAppFile();
-        return checkDownloadedFile(bSuccess);
-    }
-
     private DownloadUpdateMsg checkDownloadedFile(boolean bSuccess) {
         DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
         if (bSuccess) {
@@ -419,13 +409,23 @@ public class AppUpdateService extends Service {
             if (mAPKMD5.equals(strDownloadedMd5)) {
                 resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.SUCCESS;
             } else {
-                KLog.e("DownloadUpdate Md5 Not Equal");
+                KLog.e("DownloadUpdate MD5 Not Equal");
                 resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
             }
         } else {
             resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
         }
         return resultMsg;
+    }
+
+    private DownloadUpdateMsg downloadUpdateRun() {
+        if (!createDownloadFile()) {
+            DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
+            resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
+            return resultMsg;
+        }
+        boolean bSuccess = downloadAppFile();
+        return checkDownloadedFile(bSuccess);
     }
 
     private boolean downloadAppFile() {
