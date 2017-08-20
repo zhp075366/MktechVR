@@ -86,9 +86,10 @@ public class AppUpdateService extends Service {
     private AsyncTaskWrapper<Void, Integer, DownloadUpdateMsg> mDownloadUpdateTask;
     private AsyncTaskWrapper.OnLoadListener<Void, Integer, DownloadUpdateMsg> mDownloadUpdateListener;
 
-    // APK大小及MD5值
-    private int mAPKLentgh;
+    // 下载APK相关信息
+    private int mAPKSize;
     private String mAPKMD5;
+    private int mReceivedBytes;
 
     // Service状态获取锁
     private final Object mLock = new Object();
@@ -125,7 +126,7 @@ public class AppUpdateService extends Service {
 
     public void startDownloadUpdate(String appMd5, int fileLength) {
         mAPKMD5 = appMd5;
-        mAPKLentgh = fileLength;
+        mAPKSize = fileLength;
         mDownloadUpdateTask = new AsyncTaskWrapper<>();
         mDownloadUpdateTask.setTaskTag("DownloadUpdateTask");
         mDownloadUpdateTask.setOnTaskListener(mDownloadUpdateListener);
@@ -389,7 +390,7 @@ public class AppUpdateService extends Service {
         SDCardUtil.createFolder(saveDir);
         try {
             RandomAccessFile out = new RandomAccessFile(file, "rwd");
-            out.setLength(mAPKLentgh);
+            out.setLength(mAPKSize);
             out.close();
         }
         catch (IOException e) {
@@ -400,7 +401,7 @@ public class AppUpdateService extends Service {
         return true;
     }
 
-    private DownloadUpdateMsg checkDownloadedFile(boolean bSuccess) {
+    private DownloadUpdateMsg checkApkFileMD5(boolean bSuccess) {
         DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
         if (bSuccess) {
             String saveDir = SDCardUtil.getDownloadSaveRootPath();
@@ -424,91 +425,90 @@ public class AppUpdateService extends Service {
             resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
             return resultMsg;
         }
-        boolean bSuccess = downloadAppFile();
-        return checkDownloadedFile(bSuccess);
+        mReceivedBytes = 0;
+        int retryCount = 10;
+        boolean bSuccess = false;
+        for (int i = 0; i < retryCount; i++) {
+            bSuccess = downloadAppFile();
+            if (bSuccess) {
+                break;
+            }
+        }
+        return checkApkFileMD5(bSuccess);
     }
 
     private boolean downloadAppFile() {
-        int retryCount = 10;
-        int receivedBytes = 0;
+        int progress;
+        int currentProgress = 0;
+        RandomAccessFile raFile = null;
+        BufferedInputStream in = null;
         boolean bDownloadComplete = false;
-        while (retryCount > 0) {
-            int progress;
-            int currentProgress = 0;
-            RandomAccessFile raFile = null;
-            BufferedInputStream in = null;
-            HttpURLConnection urlConnection = null;
-            try {
-                URL url = new URL(SERVER_ROOT + DOWNLOAD_APK_FILE);
-                urlConnection = (HttpURLConnection)url.openConnection();
-                urlConnection.setDoInput(true);
-                urlConnection.setReadTimeout(10000);
-                urlConnection.setConnectTimeout(10000);
-                urlConnection.setRequestMethod("GET");
-                urlConnection.setRequestProperty("Range", "bytes=" + receivedBytes + "-" + (mAPKLentgh - 1));
-                urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-                urlConnection.connect();
-                int nResponseCode = urlConnection.getResponseCode();
-                if (nResponseCode == HttpURLConnection.HTTP_OK || nResponseCode == HttpURLConnection.HTTP_PARTIAL) {
-                    String saveDir = SDCardUtil.getDownloadSaveRootPath();
-                    File file = new File(saveDir, DOWNLOAD_APK_FILE);
-                    raFile = new RandomAccessFile(file, "rwd");
-                    raFile.seek(receivedBytes);
-                    byte[] buffer = new byte[10240];
-                    in = new BufferedInputStream(urlConnection.getInputStream());
-                    do {
-                        int nRead = in.read(buffer);
-                        if (nRead > 0) {
-                            raFile.write(buffer, 0, nRead);
-                            receivedBytes += nRead;
-                        }
-                        progress = (int)(((float)receivedBytes / mAPKLentgh) * 100);
-                        if (progress - currentProgress >= 1) {
-                            currentProgress = progress;
-                            mDownloadUpdateTask.updateProgress(progress);
-                        }
-                        if (nRead < 0 && receivedBytes == mAPKLentgh) {
-                            bDownloadComplete = true;
-                            break;
-                        }
-                    }while (true);
-                } else {
-                    KLog.e("ResponseCode:" + nResponseCode + ", msg:" + urlConnection.getResponseMessage() + " retry...");
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(SERVER_ROOT + DOWNLOAD_APK_FILE);
+            urlConnection = (HttpURLConnection)url.openConnection();
+            urlConnection.setDoInput(true);
+            urlConnection.setReadTimeout(10000);
+            urlConnection.setConnectTimeout(10000);
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setRequestProperty("Range", "bytes=" + mReceivedBytes + "-" + (mAPKSize - 1));
+            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+            urlConnection.connect();
+            int nResponseCode = urlConnection.getResponseCode();
+            if (nResponseCode == HttpURLConnection.HTTP_OK || nResponseCode == HttpURLConnection.HTTP_PARTIAL) {
+                String saveDir = SDCardUtil.getDownloadSaveRootPath();
+                File file = new File(saveDir, DOWNLOAD_APK_FILE);
+                raFile = new RandomAccessFile(file, "rwd");
+                raFile.seek(mReceivedBytes);
+                byte[] buffer = new byte[10240];
+                in = new BufferedInputStream(urlConnection.getInputStream());
+                do {
+                    int nRead = in.read(buffer);
+                    if (nRead > 0) {
+                        raFile.write(buffer, 0, nRead);
+                        mReceivedBytes += nRead;
+                    }
+                    progress = (int)(((float)mReceivedBytes / mAPKSize) * 100);
+                    if (progress - currentProgress >= 1) {
+                        currentProgress = progress;
+                        mDownloadUpdateTask.updateProgress(progress);
+                    }
+                    if (nRead < 0 && mReceivedBytes == mAPKSize) {
+                        bDownloadComplete = true;
+                        break;
+                    }
+                }while (true);
+            } else {
+                KLog.e("ResponseCode:" + nResponseCode + ", msg:" + urlConnection.getResponseMessage() + " retry...");
+            }
+        }
+        catch (SocketTimeoutException e) {
+            e.printStackTrace();
+            KLog.e("DownloadUpdate SocketTimeoutException retry");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            KLog.e("DownloadUpdate IOException retry");
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-            catch (SocketTimeoutException e) {
-                retryCount--;
-                e.printStackTrace();
-                KLog.e("DownloadUpdate SocketTimeoutException retry");
-            }
-            catch (IOException e) {
-                retryCount--;
-                e.printStackTrace();
-                KLog.e("DownloadUpdate IOException retry");
-            }
-            finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            if (raFile != null) {
+                try {
+                    raFile.close();
                 }
-                if (raFile != null) {
-                    try {
-                        raFile.close();
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
+                catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-            if (bDownloadComplete) {
-                break;
+            if (urlConnection != null) {
+                urlConnection.disconnect();
             }
         }
         return bDownloadComplete;
