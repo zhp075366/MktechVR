@@ -73,7 +73,7 @@ public class AppUpdateService extends Service {
     // 服务器相关信息
     private static final String UPDATE_CFG_FILE = "update.cfg";
     private static final String DOWNLOAD_APK_FILE = "MKIPC.apk";
-    private static final String SERVER_ROOT = "http://192.168.10.32/ipc_update/";
+    private static final String SERVER_ROOT = "http://rdtest.myhiott.com:8081/ftp_test/lifeiheng/ipc_android_apk/";
 
     // 通知
     private Notification.Builder mNBuilder;

@@ -31,7 +31,7 @@ public class AppUpdateManager implements OnClickListener {
 
     private int mAppSize;
     private String mAppMD5;
-    // 打开App默认为HomeCheck一次
+    // 打开App默认为Home Check一次
     private boolean mIsHomeCheck = true;
 
     public void init(Context context) {
@@ -67,14 +67,13 @@ public class AppUpdateManager implements OnClickListener {
             return;
         }
         if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
+            // 如果首页先检测，Setting后检测，直接沿用这次的检测
             if (!mIsHomeCheck) {
-                // 如果首页先检测，Setting后检测，直接沿用这次的检测好
                 showCheckingDialog(mResources.getString(R.string.update_check_tips));
             }
-            // 如果Setting先检测，首页后检测，直接return取消
+            // 如果Setting先检测，首页后检测，直接return
             return;
         }
-        // 开始检测
         if (!mIsHomeCheck) {
             showCheckingDialog(mResources.getString(R.string.update_check_tips));
         }
