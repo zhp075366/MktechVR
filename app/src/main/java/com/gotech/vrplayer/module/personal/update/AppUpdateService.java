@@ -320,13 +320,11 @@ public class AppUpdateService extends Service {
                     resultMsg.eResult = CHECK_UPDATE_RESULT.NO_UPDATE;
                 }
             }
-        }
-        catch (SocketTimeoutException e) {
+        } catch (SocketTimeoutException e) {
             e.printStackTrace();
             resultMsg.eResult = CHECK_UPDATE_RESULT.TIMEOUT;
             KLog.e("CheckUpdate ConnectTimeoutException");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             resultMsg.eResult = CHECK_UPDATE_RESULT.EXCEPTION;
             KLog.e("CheckUpdate OtherException");
@@ -364,16 +362,14 @@ public class AppUpdateService extends Service {
                 KLog.e("ResponseCode:" + responseCode + ", msg:" + urlConnection.getResponseMessage());
                 throw new Exception();
             }
-        }
-        finally {
+        } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
             if (bufferedReader != null) {
                 try {
                     bufferedReader.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     KLog.e(e.getMessage());
                 }
             }
@@ -392,8 +388,7 @@ public class AppUpdateService extends Service {
             RandomAccessFile out = new RandomAccessFile(file, "rwd");
             out.setLength(mAPKSize);
             out.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             KLog.e("createDownloadFile error");
             return false;
@@ -477,33 +472,28 @@ public class AppUpdateService extends Service {
                         bDownloadComplete = true;
                         break;
                     }
-                }while (true);
+                } while (true);
             } else {
                 KLog.e("ResponseCode:" + nResponseCode + ", msg:" + urlConnection.getResponseMessage() + " retry...");
             }
-        }
-        catch (SocketTimeoutException e) {
+        } catch (SocketTimeoutException e) {
             e.printStackTrace();
             KLog.e("DownloadUpdate SocketTimeoutException retry");
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             KLog.e("DownloadUpdate IOException retry");
-        }
-        finally {
+        } finally {
             if (in != null) {
                 try {
                     in.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
             if (raFile != null) {
                 try {
                     raFile.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
