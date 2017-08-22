@@ -59,9 +59,8 @@
             android:textSize="15sp"/>
 
         <View
-            android:layout_width="0.4dp"
-            android:layout_height="45dp"
-            android:background="@color/gainsboro"/>
+            android:layout_width="1dp"
+            android:layout_height="45dp"/>
 
         <Button
             android:id="@+id/okButton"
