@@ -1,2 +1,1 @@
-include ':app', ':baseRecyclerViewAdapterHelper'
-project(':baseRecyclerViewAdapterHelper').projectDir = new File('libraries/baseRecyclerViewAdapterHelper')
+include ':app'

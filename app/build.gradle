@@ -45,9 +45,10 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
-    compile project(':baseRecyclerViewAdapterHelper')
+
     compile files('libs/okio-1.13.0.jar')
     compile files('libs/okhttp-3.8.1.jar')
     compile files('libs/okgo-3.0.4.jar')
     compile files('libs/okserver-2.0.5.jar')
+    compile files('libs/baseRecyclerViewAdapter.jar')
 }

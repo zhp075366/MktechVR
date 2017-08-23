@@ -19,6 +19,7 @@ import com.gotech.vrplayer.model.bean.HomePictureBean;
 import com.gotech.vrplayer.model.bean.VideoChannelBean;
 import com.gotech.vrplayer.module.video.detail.VideoDetailActivity;
 import com.gotech.vrplayer.utils.DensityUtil;
+import com.gotech.vrplayer.widget.CommonLoadMoreView;
 import com.gotech.vrplayer.widget.SpecialLineDivider;
 import com.socks.library.KLog;
 
@@ -180,13 +181,13 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> im
         // 分割线颜色 & 高度 & 左边距 & 右边距
         SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(true);
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
-
+        CommonLoadMoreView loadMoreView = new CommonLoadMoreView();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
         mAdapter = new VideoChannelAdapter();
         // 设置预加载
         mAdapter.setPreLoadNumber(8);
+        mAdapter.setLoadMoreView(loadMoreView);
         mAdapter.setOnLoadMoreListener(this, mRecyclerView);
-
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(itemDecoration);
         mRecyclerView.setLayoutManager(layoutManager);
