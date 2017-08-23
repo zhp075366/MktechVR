@@ -1,4 +1,2 @@
-include ':app', ':baseRecyclerViewAdapterHelper', ':okgo', ':okserver'
+include ':app', ':baseRecyclerViewAdapterHelper'
 project(':baseRecyclerViewAdapterHelper').projectDir = new File('libraries/baseRecyclerViewAdapterHelper')
-project(':okgo').projectDir = new File('libraries/okgo')
-project(':okserver').projectDir = new File('libraries/okserver')

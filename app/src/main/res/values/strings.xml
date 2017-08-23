@@ -5,7 +5,7 @@
     <string name="exit_app_tip">再按一次退出程序</string>
     <string name="load_error_tip">网络错误，请点击重试</string>
     <string name="load_more_tip">更多加载中……</string>
-    <string name="load_no_more_tip">(-_-)~~~没有更多了</string>
+    <string name="load_no_more_tip">没有更多了</string>
     <string name="permission_request_title">权限要求</string>
     <string name="setting">设置</string>
     <string name="cancel">取消</string>
