@@ -101,13 +101,6 @@ public class DownloadTask implements Runnable {
         return this;
     }
 
-    // add by zouhaiping for specify download totalSize
-    public DownloadTask totalSize(long totalSize) {
-        progress.totalSize = totalSize;
-        return this;
-    }
-    // add end
-
     public DownloadTask priority(int priority) {
         progress.priority = priority;
         return this;

@@ -89,7 +89,8 @@ public class DownloadVideoManager {
         GetRequest<File> request = OkGo.get(tag);
         // 构建下载任务，传入一个tag和我们上一步创建的request对象
         DownloadTask downloadTask = OkDownload.request(tag, request);
-        downloadTask.extra1(bean).fileName(bean.saveName).totalSize(bean.totalSize).save().start();
+        downloadTask.progress.totalSize = bean.totalSize;
+        downloadTask.extra1(bean).fileName(bean.saveName).save().start();
         KLog.i("AddTaskResult.ADD_OK->" + bean.showName);
         ToastUtil.showToast(VRApplication.getApplication(), "ADD_OK->" + bean.showName, Toast.LENGTH_SHORT);
         return AddTaskResult.ADD_OK;
