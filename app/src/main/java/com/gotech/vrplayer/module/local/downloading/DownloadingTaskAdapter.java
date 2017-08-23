@@ -12,8 +12,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.model.bean.DownloadVideoBean;
+import com.gotech.vrplayer.utils.Constants;
 import com.gotech.vrplayer.widget.NumberProgressBar;
-import com.lzy.okgo.exception.OkGoException;
 import com.lzy.okgo.model.Progress;
 import com.lzy.okserver.download.DownloadListener;
 import com.lzy.okserver.download.DownloadTask;
@@ -178,18 +178,18 @@ public class DownloadingTaskAdapter extends RecyclerView.Adapter<DownloadingTask
             Throwable throwable = progress.exception;
             throwable.printStackTrace();
             KLog.e("Exception message: " + throwable.getMessage());
-            if (throwable.getMessage().equals(OkGoException.BREAKPOINT_EXPIRED)) {
+            if (throwable.getMessage().equals(Constants.BREAKPOINT_EXPIRED)) {
                 if (tag == holder.getTag()) {
                     KLog.e(bean.showName + "->restart");
                     holder.restart(progress);
                 }
-            } else if (throwable.getMessage().equals(OkGoException.BREAKPOINT_NOT_EXIST)) {
+            } else if (throwable.getMessage().equals(Constants.BREAKPOINT_NOT_EXIST)) {
                 // 断点文件不存在了，可能被人为删除了
                 if (tag == holder.getTag()) {
                     KLog.e(bean.showName + "->restart");
                     holder.restart(progress);
                 }
-            } else if (throwable.getMessage().equals(OkGoException.UNEXPECTED_END)) {
+            } else if (throwable.getMessage().equals(Constants.UNEXPECTED_END)) {
                 if (tag == holder.getTag()) {
                     KLog.e(bean.showName + "->restart");
                     holder.restart(progress);

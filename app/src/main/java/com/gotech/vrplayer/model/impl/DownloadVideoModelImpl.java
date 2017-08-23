@@ -43,14 +43,6 @@ public class DownloadVideoModelImpl implements IDownloadVideoModel {
     private List<DownloadVideoBean> initData() {
         List<DownloadVideoBean> videos = new ArrayList<>();
 
-        DownloadVideoBean largeFile = new DownloadVideoBean();
-        largeFile.showName = "androidstudio_2.3.0.0.exe";
-        largeFile.saveName = "androidstudio_2.3.0.0_save.exe";
-        largeFile.iconUrl = "";
-        largeFile.downUrl = "http://sw.bos.baidu.com/sw-search-sp/software/5f5ecfa13d98c/androidstudio_2.3.0.0.exe";
-        largeFile.totalSize = 1938754064;
-        videos.add(largeFile);
-
         DownloadVideoBean apk1 = new DownloadVideoBean();
         apk1.showName = "QQ";
         apk1.saveName = "com.tencent.qq_save.apk";
@@ -90,6 +82,14 @@ public class DownloadVideoModelImpl implements IDownloadVideoModel {
         apk5.downUrl = "http://gdown.baidu.com/data/wisegame/bba90a8f9b03d5bd/youdaoyunbiji_77.apk";
         apk5.totalSize = 57624036;
         videos.add(apk5);
+
+        //        DownloadVideoBean largeFile = new DownloadVideoBean();
+        //        largeFile.showName = "androidstudio_2.3.0.0.exe";
+        //        largeFile.saveName = "androidstudio_2.3.0.0_save.exe";
+        //        largeFile.iconUrl = "";
+        //        largeFile.downUrl = "http://sw.bos.baidu.com/sw-search-sp/software/5f5ecfa13d98c/androidstudio_2.3.0.0.exe";
+        //        largeFile.totalSize = 1938754064;
+        //        videos.add(largeFile);
 
         return videos;
     }

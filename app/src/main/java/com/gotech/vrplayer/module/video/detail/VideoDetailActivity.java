@@ -118,12 +118,10 @@ public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter>
         SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(true);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
-
         mAdapter = new VideoDetailAdapter();
         // 设置预加载
         mAdapter.setPreLoadNumber(8);
         mAdapter.setOnLoadMoreListener(this, mRecyclerView);
-
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(itemDecoration);
         mRecyclerView.setLayoutManager(layoutManager);

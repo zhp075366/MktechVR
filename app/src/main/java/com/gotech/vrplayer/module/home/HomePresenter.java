@@ -8,6 +8,8 @@ import com.gotech.vrplayer.model.bean.HomeAdBean;
 import com.gotech.vrplayer.model.bean.HomeCategoryBean;
 import com.gotech.vrplayer.model.bean.HomeMultipleItemBean;
 import com.gotech.vrplayer.model.impl.HomeModelImpl;
+import com.gotech.vrplayer.module.local.DownloadVideoManager;
+import com.gotech.vrplayer.module.video.detail.AddTaskResult;
 import com.socks.library.KLog;
 
 import org.greenrobot.eventbus.EventBus;
@@ -69,5 +71,10 @@ public class HomePresenter {
         int id = mView.getRecommendID();
         KLog.i("RecommendID:" + id);
         return mModel.getReplaceRecommendData();
+    }
+
+    // 测试用，默认增加2个下载任务
+    public AddTaskResult addTask() {
+        return DownloadVideoManager.getInstance().addOneTask();
     }
 }

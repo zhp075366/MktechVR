@@ -27,12 +27,6 @@ package com.lzy.okgo.exception;
 public class OkGoException extends Exception {
     private static final long serialVersionUID = -8641198158155821498L;
 
-    // add by zhp
-    public static final String BREAKPOINT_NOT_EXIST = "breakpoint file does not exist!";
-    public static final String BREAKPOINT_EXPIRED = "breakpoint file has expired!";
-    public static final String UNEXPECTED_END = "unexpected end of stream";
-    // add end
-
     public OkGoException(String detailMessage) {
         super(detailMessage);
     }
