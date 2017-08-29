@@ -44,11 +44,15 @@ public class AppUpdateManager implements OnClickListener {
     public void destroy() {
         mAppUpdateService.setUIHandler(null);
         mUIHandler.removeCallbacksAndMessages(null);
-        AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateService.getServiceState();
         unbindUpdateService();
-        if (eState != AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
-            stopUpdateService();
+        AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateService.getServiceState();
+        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
+            return;
+        } else if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DESTROY) {
+            return;
         }
+        mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.DESTROY);
+        stopUpdateService();
     }
 
     public void checkUpdate(boolean isHomeCheck) {
@@ -112,7 +116,6 @@ public class AppUpdateManager implements OnClickListener {
 
     private void unbindUpdateService() {
         mContext.unbindService(onUpdateServiceConnection);
-        mAppUpdateService = null;
     }
 
     private void bindUpdateService() {

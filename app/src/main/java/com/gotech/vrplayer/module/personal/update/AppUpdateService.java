@@ -95,7 +95,7 @@ public class AppUpdateService extends Service {
     private final Object mLock = new Object();
 
     enum UPDATE_SERVICE_STATE {
-        IDLE, CHECKING, DOWNLOADINIG
+        IDLE, CHECKING, DOWNLOADINIG, DESTROY
     }
 
     @Override
