@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.AppUtil;
@@ -59,14 +58,14 @@ public class AppUpdateManager implements OnClickListener {
         mIsHomeCheck = isHomeCheck;
         if (!NetworkUtil.checkNetworkConnection(mContext)) {
             if (!mIsHomeCheck) {
-                ToastUtil.showToast(mContext, R.string.no_network_connect, Toast.LENGTH_SHORT);
+                ToastUtil.showToast(R.string.no_network_connect);
             }
             return;
         }
         AppUpdateService.UPDATE_SERVICE_STATE eState = mAppUpdateService.getServiceState();
         if (eState == AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG) {
             if (!mIsHomeCheck) {
-                ToastUtil.showToast(mContext, R.string.update_downloading, Toast.LENGTH_SHORT);
+                ToastUtil.showToast(R.string.update_downloading);
             }
             return;
         }
@@ -131,7 +130,7 @@ public class AppUpdateManager implements OnClickListener {
                 mAppUpdateService.initNotification();
                 mAppUpdateService.startDownloadUpdate(mAppMD5, mAppSize);
                 mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG);
-                ToastUtil.showToast(mContext, R.string.update_start_download, Toast.LENGTH_SHORT);
+                ToastUtil.showToast(R.string.update_start_download);
                 break;
             case R.id.cancelButton:
                 dismissDownloadDialog();
@@ -194,16 +193,16 @@ public class AppUpdateManager implements OnClickListener {
                         saveDownloadAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
                         showDownloadDialog(updateMsg.strCheckResult);
                     } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE && !mIsHomeCheck) {
-                        ToastUtil.showToast(mContext, R.string.update_already_new, Toast.LENGTH_SHORT);
+                        ToastUtil.showToast(R.string.update_already_new);
                     } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.TIMEOUT && !mIsHomeCheck) {
-                        ToastUtil.showToast(mContext, R.string.update_check_timeout, Toast.LENGTH_SHORT);
+                        ToastUtil.showToast(R.string.update_check_timeout);
                     } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.EXCEPTION && !mIsHomeCheck) {
-                        ToastUtil.showToast(mContext, R.string.update_check_exception, Toast.LENGTH_SHORT);
+                        ToastUtil.showToast(R.string.update_check_exception);
                     }
                     break;
                 case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
                     AppUpdateService.DownloadUpdateMsg downloadMsg = (AppUpdateService.DownloadUpdateMsg)msg.obj;
-                    ToastUtil.showToast(mContext, downloadMsg.strDownloadResult, Toast.LENGTH_LONG);
+                    ToastUtil.showToast(downloadMsg.strDownloadResult);
                     break;
             }
         }

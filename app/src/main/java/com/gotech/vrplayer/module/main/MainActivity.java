@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
-import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
@@ -53,15 +52,20 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
     private int iPageType = 0;
 
     // 权限请求码
-    private static final int REQUEST_CODE_STORAGE_PERM = 100;
+    private static final int REQUEST_PERMISSIONS_CODE = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initFragments();
         initNavigationBar();
-        requestPermissions();
         mVrActionBar.setOnRightButtonClickListner(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        requestPermissions();
     }
 
     @Override
@@ -163,22 +167,27 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
         String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
         //String[] perms = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_CONTACTS };
         if (!EasyPermissions.hasPermissions(this, perms)) {
-            EasyPermissions.requestPermissions(this, getString(R.string.request_storage_tip), REQUEST_CODE_STORAGE_PERM, perms);
+            EasyPermissions.requestPermissions(this, getString(R.string.request_permission_tip), REQUEST_PERMISSIONS_CODE, perms);
         }
     }
 
     @Override
     public void onPermissionsGranted(int requestCode, List<String> perms) {
-        KLog.i("onPermissionsGranted requestCode=" + requestCode);
+        KLog.i("onPermissionsGranted requestCode->" + requestCode);
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
-        KLog.e("onPermissionsDenied requestCode=" + requestCode);
+        KLog.e("onPermissionsDenied requestCode->" + requestCode);
         // (Optional) Check whether the user denied any permissions and checked "NEVER ASK AGAIN."
         // This will display a dialog directing them to enable the permission in app settings.
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-            new AppSettingsDialog.Builder(this).setTitle(getString(R.string.permission_request_title)).setRationale(getString(R.string.permission_request_content)).setNegativeButton(getString(R.string.cancel)).setPositiveButton(getString(R.string.setting)).build().show();
+            AppSettingsDialog.Builder builder = new AppSettingsDialog.Builder(this);
+            builder.setTitle(R.string.request_permission_title);
+            builder.setRationale(R.string.request_permission_content);
+            builder.setNegativeButton(R.string.cancel);
+            builder.setPositiveButton(R.string.setting);
+            builder.build().show();
         }
     }
 
@@ -201,7 +210,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
     @Override
     public void onBackPressed() {
         if ((System.currentTimeMillis() - mLastPressTime) > mExitTipTime) {
-            ToastUtil.showToast(mContext, R.string.exit_app_tip, Toast.LENGTH_SHORT);
+            ToastUtil.showToast(R.string.exit_app_tip);
             mLastPressTime = System.currentTimeMillis();
         } else {
             ToastUtil.cancelToast();

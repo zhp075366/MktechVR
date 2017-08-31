@@ -1,8 +1,5 @@
 package com.gotech.vrplayer.module.local;
 
-import android.widget.Toast;
-
-import com.gotech.vrplayer.VRApplication;
 import com.gotech.vrplayer.model.IDownloadVideoModel;
 import com.gotech.vrplayer.model.bean.DownloadVideoBean;
 import com.gotech.vrplayer.model.impl.DownloadVideoModelImpl;
@@ -62,7 +59,7 @@ public class DownloadVideoManager {
                 return result;
             }
         }
-        ToastUtil.showToast(VRApplication.getApplication(), "没有任务可添加", Toast.LENGTH_SHORT);
+        ToastUtil.showToast("没有任务可添加");
         return AddTaskResult.ADD_ERROR;
     }
 
@@ -92,7 +89,7 @@ public class DownloadVideoManager {
         downloadTask.progress.totalSize = bean.totalSize;
         downloadTask.extra1(bean).fileName(bean.saveName).save().start();
         KLog.i("AddTaskResult.ADD_OK->" + bean.showName);
-        ToastUtil.showToast(VRApplication.getApplication(), "ADD_OK->" + bean.showName, Toast.LENGTH_SHORT);
+        ToastUtil.showToast("ADD_OK->" + bean.showName);
         return AddTaskResult.ADD_OK;
     }
 
