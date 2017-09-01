@@ -162,7 +162,7 @@ public class AppUpdateManager implements OnClickListener {
 
     private void showCheckingDialog(String tipInfo) {
         dismissCheckingDialog();
-        View view = View.inflate(mContext, R.layout.dialog_check_update, null);
+        View view = View.inflate(mContext, R.layout.dialog_waitting, null);
         TextView textTip = (TextView)view.findViewById(R.id.tvTip);
         textTip.setText(tipInfo);
         mCheckingDialog = new CustomDialog(mContext, view, R.style.WaitDialog);
