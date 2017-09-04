@@ -228,21 +228,11 @@ public class AppUpdateService extends Service {
             }
 
             @Override
-            public void onCancel(Object taskTag) {
-
-            }
-
-            @Override
             public void onResult(Object taskTag, CheckUpdateMsg checkUpdateMsg) {
                 if (checkUpdateMsg.eResult != CHECK_UPDATE_RESULT.HAVE_UPDATE) {
                     setServiceState(UPDATE_SERVICE_STATE.IDLE);
                 }
                 sendCheckResultMessage(AUTO_UPDATE_CHECKING_COMPLETE, checkUpdateMsg);
-            }
-
-            @Override
-            public void onProgress(Object taskTag, Void... values) {
-
             }
 
             @Override

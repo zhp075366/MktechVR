@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
 
     private Object mTaskTag;
-    private OnLoadListener<Params, Progress, Result> mListener;
+    private OnLoadListener mListener;
     public static final Executor THREAD_POOL_CACHED = Executors.newCachedThreadPool();
     public static final Executor THREAD_POOL_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
 
@@ -27,7 +27,7 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
         return mTaskTag;
     }
 
-    public void setOnTaskListener(OnLoadListener<Params, Progress, Result> listener) {
+    public void setOnTaskListener(OnLoadListener listener) {
         mListener = listener;
     }
 
@@ -49,7 +49,7 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
 
     @Override
     protected Result doInBackground(Params... params) {
-        return mListener.onWorkerThread(mTaskTag, params);
+        return (Result)mListener.onWorkerThread(mTaskTag, params);
     }
 
     @Override
@@ -70,17 +70,18 @@ public class AsyncTaskWrapper<Params, Progress, Result> extends AsyncTask<Params
         mListener.onCancel(mTaskTag);
     }
 
-    public interface OnLoadListener<Params, Progress, Result> {
+    public static abstract class OnLoadListener<Params, Progress, Result> {
+        public void onStart(Object taskTag) {
+        }
 
-        void onStart(Object taskTag);
+        public void onCancel(Object taskTag) {
+        }
 
-        void onCancel(Object taskTag);
+        public void onProgress(Object taskTag, Progress... values) {
+        }
 
-        void onResult(Object taskTag, Result result);
+        public abstract void onResult(Object taskTag, Result result);
 
-        void onProgress(Object taskTag, Progress... values);
-
-        Result onWorkerThread(Object taskTag, Params... params);
-
+        public abstract Result onWorkerThread(Object taskTag, Params... params);
     }
 }

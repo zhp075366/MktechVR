@@ -88,20 +88,10 @@ public class LocalVideoPresenter {
             }
 
             @Override
-            public void onCancel(Object taskTag) {
-
-            }
-
-            @Override
             public void onResult(Object taskTag, List<LocalVideoBean> localVideoBeen) {
                 KLog.i("loadVideo onResult");
                 mView.hideLoading();
                 mView.showLocalVideo(localVideoBeen);
-            }
-
-            @Override
-            public void onProgress(Object taskTag, Void... values) {
-
             }
 
             @Override
@@ -127,11 +117,6 @@ public class LocalVideoPresenter {
             public void onResult(Object taskTag, Bitmap bitmap) {
                 KLog.i("Thumbnail onResult->" + taskTag);
                 mView.setThumbnail((int)taskTag, bitmap);
-            }
-
-            @Override
-            public void onProgress(Object taskTag, Void... values) {
-
             }
 
             @Override

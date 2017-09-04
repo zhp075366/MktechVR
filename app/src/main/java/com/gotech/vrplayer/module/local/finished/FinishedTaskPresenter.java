@@ -50,20 +50,10 @@ public class FinishedTaskPresenter {
             }
 
             @Override
-            public void onCancel(Object taskTag) {
-
-            }
-
-            @Override
             public void onResult(Object taskTag, List<Progress> progresses) {
                 KLog.i("onResult");
                 mView.hideLoading();
                 mView.showFinishedTasks(progresses);
-            }
-
-            @Override
-            public void onProgress(Object taskTag, Void... values) {
-
             }
 
             @Override

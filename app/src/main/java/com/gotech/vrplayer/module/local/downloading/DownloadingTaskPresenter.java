@@ -66,20 +66,10 @@ public class DownloadingTaskPresenter {
             }
 
             @Override
-            public void onCancel(Object taskTag) {
-
-            }
-
-            @Override
             public void onResult(Object taskTag, List<DownloadTask> tasks) {
                 KLog.i("onResult");
                 mView.hideLoading();
                 mView.showDownloadingTasks(tasks);
-            }
-
-            @Override
-            public void onProgress(Object taskTag, Void... values) {
-
             }
 
             @Override
