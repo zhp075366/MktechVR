@@ -182,7 +182,7 @@ public class AppUpdateManager implements OnClickListener {
                 dismissCheckingDialog();
                 AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
                 if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                    showDownloadDialog(updateMsg.updateInfo);
+                    showDownloadDialog(updateMsg.showUpdateInfo);
                 } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE && !mIsHomeCheck) {
                     ToastUtil.showToast(R.string.update_already_new);
                 } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.TIMEOUT && !mIsHomeCheck) {

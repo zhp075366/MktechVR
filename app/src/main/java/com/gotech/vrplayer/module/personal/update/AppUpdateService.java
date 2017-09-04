@@ -56,12 +56,14 @@ public class AppUpdateService extends Service {
 
     class CheckUpdateMsg {
         int appSize;
+        int versionCode;
+        String versionName;
         String appName;
         String appMD5Sum;
-        String updateInfo;
         String downloadUrl;
         String updateMode;
         String updateTime;
+        String showUpdateInfo;
         CHECK_UPDATE_RESULT eResult;
     }
 
@@ -286,8 +288,8 @@ public class AppUpdateService extends Service {
     }
 
     public CheckUpdateMsg checkUpdateRun() {
+        String updateInfo = "";
         CheckUpdateMsg resultMsg = new CheckUpdateMsg();
-        resultMsg.updateInfo = null;
         try {
             PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
             int nCurVersionCode = packageInfo.versionCode;
@@ -295,32 +297,28 @@ public class AppUpdateService extends Service {
             JSONArray arr = new JSONArray(updateDetail);
             if (arr.length() > 0) {
                 JSONObject obj = arr.getJSONObject(0);
-                String appName = obj.getString("appName");
-                String appMD5Sum = obj.getString("appMD5Sum");
-                String updateMode = obj.getString("updateMode");
-                String updateTime = obj.getString("updateTime");
-                String strDownloadUrl = obj.getString("downloadUrl");
-                int appSize = obj.getInt("appSize");
-                int nNewVersionCode = obj.getInt("versionCode");
+                resultMsg.appName = obj.getString("appName");
+                resultMsg.appSize = obj.getInt("appSize");
+                resultMsg.appMD5Sum = obj.getString("appMD5Sum");
+                resultMsg.downloadUrl = obj.getString("downloadUrl");
+                resultMsg.versionCode = obj.getInt("versionCode");
+                resultMsg.versionName = obj.getString("versionName");
+                resultMsg.updateMode = obj.getString("updateMode");
+                resultMsg.updateTime = obj.getString("updateTime");
+                updateInfo = obj.getString("updateInfo");
+            }
+            if (resultMsg.versionCode > nCurVersionCode) {
                 String updateVersion = mContext.getResources().getString(R.string.update_info_version);
                 String updateSize = mContext.getResources().getString(R.string.update_info_size);
                 String updateContent = mContext.getResources().getString(R.string.update_info_content);
-                String sizeStr = Constants.TWO_DECIMAL_FORMAT.format((double)appSize / 1024 / 1024);
-                String strTipsContent = String.format(updateSize, sizeStr) + "\n";
-                strTipsContent = strTipsContent + updateVersion + obj.getString("versionName") + "\n";
-                strTipsContent = strTipsContent + updateContent + obj.getString("updateInfo");
-                if (nNewVersionCode > nCurVersionCode) {
-                    resultMsg.appSize = appSize;
-                    resultMsg.appMD5Sum = appMD5Sum;
-                    resultMsg.appName = appName;
-                    resultMsg.updateMode = updateMode;
-                    resultMsg.updateTime = updateTime;
-                    resultMsg.downloadUrl = strDownloadUrl;
-                    resultMsg.updateInfo = strTipsContent;
-                    resultMsg.eResult = CHECK_UPDATE_RESULT.HAVE_UPDATE;
-                } else {
-                    resultMsg.eResult = CHECK_UPDATE_RESULT.NO_UPDATE;
-                }
+                String sizeStr = Constants.TWO_DECIMAL_FORMAT.format((double)resultMsg.appSize / 1024 / 1024);
+                String strTipInfo = String.format(updateSize, sizeStr) + "\n";
+                strTipInfo = strTipInfo + updateVersion + resultMsg.versionName + "\n";
+                strTipInfo = strTipInfo + updateContent + updateInfo;
+                resultMsg.showUpdateInfo = strTipInfo;
+                resultMsg.eResult = CHECK_UPDATE_RESULT.HAVE_UPDATE;
+            } else {
+                resultMsg.eResult = CHECK_UPDATE_RESULT.NO_UPDATE;
             }
         } catch (SocketTimeoutException e) {
             e.printStackTrace();
