@@ -28,8 +28,6 @@ public class AppUpdateManager implements OnClickListener {
     private Dialog mDownloadDialog;
     private AppUpdateService mAppUpdateService;
 
-    private int mAppSize;
-    private String mAppMD5;
     // 打开App默认为Home Check一次
     private boolean mIsHomeCheck = true;
 
@@ -125,17 +123,16 @@ public class AppUpdateManager implements OnClickListener {
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.okButton:
-                dismissDownloadDialog();
-                mAppUpdateService.initNotification();
-                mAppUpdateService.startDownloadUpdate(mAppMD5, mAppSize);
-                mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG);
-                ToastUtil.showToast(R.string.update_start_download);
-                break;
-            case R.id.cancelButton:
-                dismissDownloadDialog();
-                mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
-                break;
+        case R.id.okButton:
+            dismissDownloadDialog();
+            mAppUpdateService.startDownloadUpdate();
+            mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.DOWNLOADINIG);
+            ToastUtil.showToast(R.string.update_start_download);
+            break;
+        case R.id.cancelButton:
+            dismissDownloadDialog();
+            mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
+            break;
         }
     }
 
@@ -177,33 +174,27 @@ public class AppUpdateManager implements OnClickListener {
         }
     }
 
-    private void saveDownloadAppInfo(String appMd5, int fileLength) {
-        mAppMD5 = appMd5;
-        mAppSize = fileLength;
-    }
-
     private Handler mUIHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case AppUpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
-                    dismissCheckingDialog();
-                    AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
-                    if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                        saveDownloadAppInfo(updateMsg.strAppMd5, updateMsg.appSize);
-                        showDownloadDialog(updateMsg.strCheckResult);
-                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE && !mIsHomeCheck) {
-                        ToastUtil.showToast(R.string.update_already_new);
-                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.TIMEOUT && !mIsHomeCheck) {
-                        ToastUtil.showToast(R.string.update_check_timeout);
-                    } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.EXCEPTION && !mIsHomeCheck) {
-                        ToastUtil.showToast(R.string.update_check_exception);
-                    }
-                    break;
-                case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
-                    AppUpdateService.DownloadUpdateMsg downloadMsg = (AppUpdateService.DownloadUpdateMsg)msg.obj;
-                    ToastUtil.showToast(downloadMsg.strDownloadResult);
-                    break;
+            case AppUpdateService.AUTO_UPDATE_CHECKING_COMPLETE:
+                dismissCheckingDialog();
+                AppUpdateService.CheckUpdateMsg updateMsg = (AppUpdateService.CheckUpdateMsg)msg.obj;
+                if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
+                    showDownloadDialog(updateMsg.updateInfo);
+                } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.NO_UPDATE && !mIsHomeCheck) {
+                    ToastUtil.showToast(R.string.update_already_new);
+                } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.TIMEOUT && !mIsHomeCheck) {
+                    ToastUtil.showToast(R.string.update_check_timeout);
+                } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.EXCEPTION && !mIsHomeCheck) {
+                    ToastUtil.showToast(R.string.update_check_exception);
+                }
+                break;
+            case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
+                AppUpdateService.DownloadUpdateMsg downloadMsg = (AppUpdateService.DownloadUpdateMsg)msg.obj;
+                ToastUtil.showToast(downloadMsg.strToastResult);
+                break;
             }
         }
     };

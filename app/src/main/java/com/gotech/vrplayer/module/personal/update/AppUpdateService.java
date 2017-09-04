@@ -40,6 +40,7 @@ public class AppUpdateService extends Service {
     private Context mContext;
     private Resources mResources;
     private volatile Handler mUIHandler;
+    private CheckUpdateMsg mCheckUpdateMsg;
     private UPDATE_SERVICE_STATE mServiceState;
     private UpdateServiceBinder mUpdateServiceBinder = new UpdateServiceBinder();
 
@@ -55,8 +56,12 @@ public class AppUpdateService extends Service {
 
     class CheckUpdateMsg {
         int appSize;
-        String strAppMd5;
-        String strCheckResult;
+        String appName;
+        String appMD5Sum;
+        String updateInfo;
+        String downloadUrl;
+        String updateMode;
+        String updateTime;
         CHECK_UPDATE_RESULT eResult;
     }
 
@@ -66,14 +71,12 @@ public class AppUpdateService extends Service {
     }
 
     class DownloadUpdateMsg {
-        String strDownloadResult;
+        String strToastResult;
         DOWNLOAD_UPDATE_RESULT eResult;
     }
 
-    // 服务器相关信息
-    private static final String UPDATE_CFG_FILE = "update.cfg";
-    private static final String DOWNLOAD_APK_FILE = "MKIPC.apk";
-    private static final String SERVER_ROOT = "http://rdtest.myhiott.com:8081/ftp_test/lifeiheng/ipc_android_apk/";
+    // 服务器相关信息，根据实际情况作修改
+    private static final String UPDATE_CFG_PATH = "http://rdtest.myhiott.com:8081/ftp_test/lifeiheng/ipc_android_apk/IPCUpdate.json";
 
     // 通知
     private Notification.Builder mNBuilder;
@@ -86,14 +89,13 @@ public class AppUpdateService extends Service {
     private AsyncTaskWrapper<Void, Integer, DownloadUpdateMsg> mDownloadUpdateTask;
     private AsyncTaskWrapper.OnLoadListener<Void, Integer, DownloadUpdateMsg> mDownloadUpdateListener;
 
-    // 下载APK相关信息
-    private int mAPKSize;
-    private String mAPKMD5;
-    private int mReceivedBytes;
+    // 已下载APK文件的字节数
+    private int mDownloadedBytes;
 
     // Service状态获取锁
     private final Object mLock = new Object();
 
+    // Service的状态
     enum UPDATE_SERVICE_STATE {
         IDLE, CHECKING, DOWNLOADINIG, DESTROY
     }
@@ -124,9 +126,8 @@ public class AppUpdateService extends Service {
         mUIHandler = handler;
     }
 
-    public void startDownloadUpdate(String appMd5, int fileLength) {
-        mAPKMD5 = appMd5;
-        mAPKSize = fileLength;
+    public void startDownloadUpdate() {
+        initNotification();
         mDownloadUpdateTask = new AsyncTaskWrapper<>();
         mDownloadUpdateTask.setTaskTag("DownloadUpdateTask");
         mDownloadUpdateTask.setOnTaskListener(mDownloadUpdateListener);
@@ -169,7 +170,7 @@ public class AppUpdateService extends Service {
         intent.setAction(Intent.ACTION_VIEW);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         String saveDir = SDCardUtil.getDownloadSaveRootPath();
-        File file = new File(saveDir, DOWNLOAD_APK_FILE);
+        File file = new File(saveDir, mCheckUpdateMsg.appName);
         String type = "application/vnd.android.package-archive";
         intent.setDataAndType(Uri.fromFile(file), type);
         mContext.startActivity(intent);
@@ -193,7 +194,7 @@ public class AppUpdateService extends Service {
         }
     }
 
-    public void initNotification() {
+    private void initNotification() {
         Intent intent = new Intent();
         PendingIntent intentContent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mNotificationManager = (NotificationManager)mContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -231,6 +232,9 @@ public class AppUpdateService extends Service {
             public void onResult(Object taskTag, CheckUpdateMsg checkUpdateMsg) {
                 if (checkUpdateMsg.eResult != CHECK_UPDATE_RESULT.HAVE_UPDATE) {
                     setServiceState(UPDATE_SERVICE_STATE.IDLE);
+                } else {
+                    // 保存检测结果，以便下载更新时使用
+                    mCheckUpdateMsg = checkUpdateMsg;
                 }
                 sendCheckResultMessage(AUTO_UPDATE_CHECKING_COMPLETE, checkUpdateMsg);
             }
@@ -258,10 +262,10 @@ public class AppUpdateService extends Service {
             public void onResult(Object taskTag, DownloadUpdateMsg downloadUpdateMsg) {
                 mNotificationManager.cancel(0);
                 if (downloadUpdateMsg.eResult == DOWNLOAD_UPDATE_RESULT.FAIL) {
-                    downloadUpdateMsg.strDownloadResult = mResources.getString(R.string.update_failed_msg);
+                    downloadUpdateMsg.strToastResult = mResources.getString(R.string.update_failed_msg);
                     sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
                 } else if (downloadUpdateMsg.eResult == DOWNLOAD_UPDATE_RESULT.SUCCESS) {
-                    downloadUpdateMsg.strDownloadResult = mResources.getString(R.string.update_success_msg);
+                    downloadUpdateMsg.strToastResult = mResources.getString(R.string.update_success_msg);
                     sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
                     installPackage();
                 }
@@ -283,7 +287,7 @@ public class AppUpdateService extends Service {
 
     public CheckUpdateMsg checkUpdateRun() {
         CheckUpdateMsg resultMsg = new CheckUpdateMsg();
-        resultMsg.strCheckResult = null;
+        resultMsg.updateInfo = null;
         try {
             PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
             int nCurVersionCode = packageInfo.versionCode;
@@ -291,20 +295,28 @@ public class AppUpdateService extends Service {
             JSONArray arr = new JSONArray(updateDetail);
             if (arr.length() > 0) {
                 JSONObject obj = arr.getJSONObject(0);
-                String strMd5 = obj.getString("appMD5");
+                String appName = obj.getString("appName");
+                String appMD5Sum = obj.getString("appMD5Sum");
+                String updateMode = obj.getString("updateMode");
+                String updateTime = obj.getString("updateTime");
+                String strDownloadUrl = obj.getString("downloadUrl");
                 int appSize = obj.getInt("appSize");
-                int nNewVersionCode = obj.getInt("verCode");
+                int nNewVersionCode = obj.getInt("versionCode");
                 String updateVersion = mContext.getResources().getString(R.string.update_info_version);
                 String updateSize = mContext.getResources().getString(R.string.update_info_size);
                 String updateContent = mContext.getResources().getString(R.string.update_info_content);
                 String sizeStr = Constants.TWO_DECIMAL_FORMAT.format((double)appSize / 1024 / 1024);
                 String strTipsContent = String.format(updateSize, sizeStr) + "\n";
-                strTipsContent = strTipsContent + updateVersion + obj.getString("verName") + "\n";
+                strTipsContent = strTipsContent + updateVersion + obj.getString("versionName") + "\n";
                 strTipsContent = strTipsContent + updateContent + obj.getString("updateInfo");
                 if (nNewVersionCode > nCurVersionCode) {
                     resultMsg.appSize = appSize;
-                    resultMsg.strAppMd5 = strMd5;
-                    resultMsg.strCheckResult = strTipsContent;
+                    resultMsg.appMD5Sum = appMD5Sum;
+                    resultMsg.appName = appName;
+                    resultMsg.updateMode = updateMode;
+                    resultMsg.updateTime = updateTime;
+                    resultMsg.downloadUrl = strDownloadUrl;
+                    resultMsg.updateInfo = strTipsContent;
                     resultMsg.eResult = CHECK_UPDATE_RESULT.HAVE_UPDATE;
                 } else {
                     resultMsg.eResult = CHECK_UPDATE_RESULT.NO_UPDATE;
@@ -328,7 +340,7 @@ public class AppUpdateService extends Service {
         HttpURLConnection urlConnection = null;
         BufferedReader bufferedReader = null;
         try {
-            URL url = new URL(SERVER_ROOT + UPDATE_CFG_FILE);
+            URL url = new URL(UPDATE_CFG_PATH);
             urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setReadTimeout(5000);
@@ -369,14 +381,14 @@ public class AppUpdateService extends Service {
 
     private boolean createDownloadFile() {
         String saveDir = SDCardUtil.getDownloadSaveRootPath();
-        File file = new File(saveDir, DOWNLOAD_APK_FILE);
+        File file = new File(saveDir, mCheckUpdateMsg.appName);
         if (file.exists()) {
             file.delete();
         }
         SDCardUtil.createFolder(saveDir);
         try {
             RandomAccessFile out = new RandomAccessFile(file, "rwd");
-            out.setLength(mAPKSize);
+            out.setLength(mCheckUpdateMsg.appSize);
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -390,9 +402,9 @@ public class AppUpdateService extends Service {
         DownloadUpdateMsg resultMsg = new DownloadUpdateMsg();
         if (bSuccess) {
             String saveDir = SDCardUtil.getDownloadSaveRootPath();
-            File file = new File(saveDir, DOWNLOAD_APK_FILE);
+            File file = new File(saveDir, mCheckUpdateMsg.appName);
             String strDownloadedMd5 = MD5Util.getFileMD5(file);
-            if (mAPKMD5.equals(strDownloadedMd5)) {
+            if (mCheckUpdateMsg.appMD5Sum.equals(strDownloadedMd5)) {
                 resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.SUCCESS;
             } else {
                 KLog.e("DownloadUpdate MD5 Not Equal");
@@ -410,7 +422,7 @@ public class AppUpdateService extends Service {
             resultMsg.eResult = DOWNLOAD_UPDATE_RESULT.FAIL;
             return resultMsg;
         }
-        mReceivedBytes = 0;
+        mDownloadedBytes = 0;
         int retryCount = 10;
         boolean bSuccess = false;
         for (int i = 0; i < retryCount; i++) {
@@ -430,35 +442,35 @@ public class AppUpdateService extends Service {
         boolean bDownloadComplete = false;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(SERVER_ROOT + DOWNLOAD_APK_FILE);
+            URL url = new URL(mCheckUpdateMsg.downloadUrl);
             urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setReadTimeout(10000);
             urlConnection.setConnectTimeout(10000);
             urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("Range", "bytes=" + mReceivedBytes + "-" + (mAPKSize - 1));
+            urlConnection.setRequestProperty("Range", "bytes=" + mDownloadedBytes + "-" + (mCheckUpdateMsg.appSize - 1));
             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
             urlConnection.connect();
             int nResponseCode = urlConnection.getResponseCode();
             if (nResponseCode == HttpURLConnection.HTTP_OK || nResponseCode == HttpURLConnection.HTTP_PARTIAL) {
                 String saveDir = SDCardUtil.getDownloadSaveRootPath();
-                File file = new File(saveDir, DOWNLOAD_APK_FILE);
+                File file = new File(saveDir, mCheckUpdateMsg.appName);
                 raFile = new RandomAccessFile(file, "rwd");
-                raFile.seek(mReceivedBytes);
+                raFile.seek(mDownloadedBytes);
                 byte[] buffer = new byte[10240];
                 in = new BufferedInputStream(urlConnection.getInputStream());
                 do {
                     int nRead = in.read(buffer);
                     if (nRead > 0) {
                         raFile.write(buffer, 0, nRead);
-                        mReceivedBytes += nRead;
+                        mDownloadedBytes += nRead;
                     }
-                    progress = (int)(((float)mReceivedBytes / mAPKSize) * 100);
+                    progress = (int)(((float)mDownloadedBytes / mCheckUpdateMsg.appSize) * 100);
                     if (progress - currentProgress >= 1) {
                         currentProgress = progress;
                         mDownloadUpdateTask.updateProgress(progress);
                     }
-                    if (nRead < 0 && mReceivedBytes == mAPKSize) {
+                    if (nRead < 0 && mDownloadedBytes == mCheckUpdateMsg.appSize) {
                         bDownloadComplete = true;
                         break;
                     }

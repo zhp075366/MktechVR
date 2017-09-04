@@ -112,7 +112,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
         addSpaceHeader();
         addNoMoreFooter();
         setItemClickListener(data);
-
         mAdapter.setSpanSizeLookup(new BaseQuickAdapter.SpanSizeLookup() {
             @Override
             public int getSpanSize(GridLayoutManager gridLayoutManager, int position) {
