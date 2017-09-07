@@ -41,7 +41,7 @@ public class AppUpdateService extends Service {
     private Resources mResources;
     private volatile Handler mUIHandler;
     private CheckUpdateMsg mCheckUpdateMsg;
-    private UPDATE_SERVICE_STATE mServiceState;
+    private UPDATE_SERVICE_STATE mServiceState = UPDATE_SERVICE_STATE.IDLE;
     private UpdateServiceBinder mUpdateServiceBinder = new UpdateServiceBinder();
 
     // Hander消息
@@ -118,7 +118,6 @@ public class AppUpdateService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         KLog.i("updateService onStart");
-        setServiceState(UPDATE_SERVICE_STATE.IDLE);
         initCheckUpdateListener();
         initDownloadUpdateListener();
         return super.onStartCommand(intent, flags, startId);
@@ -226,16 +225,9 @@ public class AppUpdateService extends Service {
     private void initCheckUpdateListener() {
         mCheckUpdateListener = new AsyncTaskWrapper.OnLoadListener<Void, Void, CheckUpdateMsg>() {
             @Override
-            public void onStart(Object taskTag) {
-                setServiceState(UPDATE_SERVICE_STATE.CHECKING);
-            }
-
-            @Override
             public void onResult(Object taskTag, CheckUpdateMsg checkUpdateMsg) {
-                if (checkUpdateMsg.eResult != CHECK_UPDATE_RESULT.HAVE_UPDATE) {
-                    setServiceState(UPDATE_SERVICE_STATE.IDLE);
-                } else {
-                    // 保存检测结果，以便下载更新时使用
+                // 保存检测结果，以便下载更新时使用
+                if (checkUpdateMsg.eResult == CHECK_UPDATE_RESULT.HAVE_UPDATE) {
                     mCheckUpdateMsg = checkUpdateMsg;
                 }
                 sendCheckResultMessage(AUTO_UPDATE_CHECKING_COMPLETE, checkUpdateMsg);
@@ -251,16 +243,6 @@ public class AppUpdateService extends Service {
     private void initDownloadUpdateListener() {
         mDownloadUpdateListener = new AsyncTaskWrapper.OnLoadListener<Void, Integer, DownloadUpdateMsg>() {
             @Override
-            public void onStart(Object taskTag) {
-                setServiceState(UPDATE_SERVICE_STATE.DOWNLOADINIG);
-            }
-
-            @Override
-            public void onCancel(Object taskTag) {
-                setServiceState(UPDATE_SERVICE_STATE.IDLE);
-            }
-
-            @Override
             public void onResult(Object taskTag, DownloadUpdateMsg downloadUpdateMsg) {
                 mNotificationManager.cancel(0);
                 if (downloadUpdateMsg.eResult == DOWNLOAD_UPDATE_RESULT.FAIL) {
@@ -271,7 +253,6 @@ public class AppUpdateService extends Service {
                     sendDownloadResultMessage(AUTO_UPDATE_DOWNLOADING_COMPLETE, downloadUpdateMsg);
                     installPackage();
                 }
-                setServiceState(UPDATE_SERVICE_STATE.IDLE);
             }
 
             @Override

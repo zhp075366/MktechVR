@@ -66,13 +66,10 @@ public class AppUpdateManager implements OnClickListener {
                 ToastUtil.showToast(R.string.update_downloading);
             }
             return;
-        }
-        if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
-            // 如果首页先检测，Setting后检测，直接沿用这次的检测
+        } else if (eState == AppUpdateService.UPDATE_SERVICE_STATE.CHECKING) {
             if (!mIsHomeCheck) {
-                showCheckingDialog(mResources.getString(R.string.update_check_tips));
+                ToastUtil.showToast(R.string.update_checking);
             }
-            // 如果Setting先检测，首页后检测，直接return
             return;
         }
         if (!mIsHomeCheck) {
@@ -190,10 +187,16 @@ public class AppUpdateManager implements OnClickListener {
                 } else if (updateMsg.eResult == AppUpdateService.CHECK_UPDATE_RESULT.EXCEPTION && !mIsHomeCheck) {
                     ToastUtil.showToast(R.string.update_check_exception);
                 }
+                // 设置Service状态
+                if (updateMsg.eResult != AppUpdateService.CHECK_UPDATE_RESULT.HAVE_UPDATE) {
+                    mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
+                }
                 break;
             case AppUpdateService.AUTO_UPDATE_DOWNLOADING_COMPLETE:
                 AppUpdateService.DownloadUpdateMsg downloadMsg = (AppUpdateService.DownloadUpdateMsg)msg.obj;
                 ToastUtil.showToast(downloadMsg.strToastResult);
+                // 设置Service状态
+                mAppUpdateService.setServiceState(AppUpdateService.UPDATE_SERVICE_STATE.IDLE);
                 break;
             }
         }
