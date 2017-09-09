@@ -79,11 +79,10 @@ public class LocalFragment extends BaseFragment {
         mTabLayout.setTabMode(TabLayout.MODE_FIXED);
         mTabLayout.addTab(mTabLayout.newTab().setText(strTitle[0]));
         mTabLayout.addTab(mTabLayout.newTab().setText(strTitle[1]));
-        for (int i = 0; i < strTitle.length; i++) {
-            childFragments.add(DownloadingTaskFragment.newInstance("DownloadingVideo"));
-            childFragments.add(FinishedTaskFragment.newInstance("DownloadedVideo"));
-            childFragments.add(LocalVideoFragment.newInstance("LocalVideo"));
-        }
+        mTabLayout.addTab(mTabLayout.newTab().setText(strTitle[2]));
+        childFragments.add(DownloadingTaskFragment.newInstance("DownloadingVideo"));
+        childFragments.add(FinishedTaskFragment.newInstance("DownloadedVideo"));
+        childFragments.add(LocalVideoFragment.newInstance("LocalVideo"));
         FragmentManager fm = this.getChildFragmentManager();
         TitlePagerAdapter adapter = new TitlePagerAdapter(fm, childFragments, strTitle);
         mViewPager.setAdapter(adapter);
