@@ -30,6 +30,11 @@
         </activity>
 
         <activity
+            android:name=".module.rpc.HelloworldActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
             android:name=".module.player.VrPlayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="landscape"
