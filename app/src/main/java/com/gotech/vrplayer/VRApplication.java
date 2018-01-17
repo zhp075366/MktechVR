@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import com.gotech.vrplayer.greendao.AppMRHOpenHelper;
 import com.gotech.vrplayer.greendao.DaoMaster;
 import com.gotech.vrplayer.greendao.DaoSession;
-import com.gotech.vrplayer.module.personal.update.AppUpdateManager;
 import com.gotech.vrplayer.utils.MigrationHelper;
 import com.lzy.okgo.OkGo;
 import com.socks.library.KLog;
@@ -21,7 +20,7 @@ public class VRApplication extends Application {
 
     private DaoSession mDaoSession;
     private static VRApplication mApp;
-    private static final String GLOBAL_TAG = "gotech";
+    private static final String GLOBAL_TAG = "iot";
 
     @Override
     public void onCreate() {

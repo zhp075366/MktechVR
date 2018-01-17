@@ -1,10 +1,8 @@
 package com.gotech.vrplayer.module.rpc;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -16,13 +14,10 @@ import com.gotech.vrplayer.GreeterGrpc;
 import com.gotech.vrplayer.HelloReply;
 import com.gotech.vrplayer.HelloRequest;
 import com.gotech.vrplayer.R;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.concurrent.TimeUnit;
+import com.gotech.vrplayer.utils.GRPCTaskWrapper;
+import com.socks.library.KLog;
 
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 
 public class HelloworldActivity extends AppCompatActivity {
     private Button mSendButton;
@@ -30,11 +25,14 @@ public class HelloworldActivity extends AppCompatActivity {
     private EditText mPortEdit;
     private EditText mMessageEdit;
     private TextView mResultText;
+    private GRPCTaskWrapper.OnLoadListener mGRPCListener;
+    private GRPCTaskWrapper<String, Void, HelloReply> mTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_helloworld);
+        initGRPCListener();
         mSendButton = (Button)findViewById(R.id.send_button);
         mHostEdit = (EditText)findViewById(R.id.host_edit_text);
         mPortEdit = (EditText)findViewById(R.id.port_edit_text);
@@ -45,51 +43,52 @@ public class HelloworldActivity extends AppCompatActivity {
 
     public void sendMessage(View view) {
         ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(mHostEdit.getWindowToken(), 0);
-        mSendButton.setEnabled(false);
-        new GrpcTask().execute();
+        String host = mHostEdit.getText().toString();
+        String message = mMessageEdit.getText().toString();
+        String port = mPortEdit.getText().toString();
+        // Task
+        mTask = new GRPCTaskWrapper<>();
+        mTask.setHost(host);
+        mTask.setPort(port);
+        mTask.setOnTaskListener(mGRPCListener);
+        mTask.executeOnExecutor(GRPCTaskWrapper.THREAD_POOL_CACHED, message);
     }
 
-    private class GrpcTask extends AsyncTask<Void, Void, String> {
-        private String mHost;
-        private String mMessage;
-        private int mPort;
-        private ManagedChannel mChannel;
-
-        @Override
-        protected void onPreExecute() {
-            mHost = mHostEdit.getText().toString();
-            mMessage = mMessageEdit.getText().toString();
-            String portStr = mPortEdit.getText().toString();
-            mPort = TextUtils.isEmpty(portStr) ? 0 : Integer.valueOf(portStr);
-            mResultText.setText("");
-        }
-
-        @Override
-        protected String doInBackground(Void... nothing) {
-            try {
-                mChannel = ManagedChannelBuilder.forAddress(mHost, mPort).usePlaintext(true).build();
-                GreeterGrpc.GreeterBlockingStub stub = GreeterGrpc.newBlockingStub(mChannel);
-                HelloRequest request = HelloRequest.newBuilder().setName(mMessage).build();
-                HelloReply reply = stub.sayHello(request);
-                return reply.getMessage();
-            } catch (Exception e) {
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                e.printStackTrace(pw);
-                pw.flush();
-                return String.format("Failed... : %n%s", sw);
+    private void initGRPCListener() {
+        mGRPCListener = new GRPCTaskWrapper.OnLoadListener<String, Void, HelloReply>() {
+            @Override
+            public void onStart(Object taskTag) {
+                KLog.i("onStart");
+                mResultText.setText("");
+                mSendButton.setEnabled(false);
             }
-        }
 
-        @Override
-        protected void onPostExecute(String result) {
-            try {
-                mChannel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            @Override
+            public void onResult(Object taskTag, HelloReply helloReply) {
+                KLog.i("onResult");
+                if (helloReply != null) {
+                    mResultText.setText(helloReply.getMessage());
+                }
+                mSendButton.setEnabled(true);
             }
-            mResultText.setText(result);
-            mSendButton.setEnabled(true);
-        }
+
+            @Override
+            public HelloReply onWorkerThread(Object taskTag, ManagedChannel channel, String... params) {
+                HelloReply reply = null;
+                try {
+                    GreeterGrpc.GreeterBlockingStub stub = GreeterGrpc.newBlockingStub(channel);
+                    HelloRequest.Builder builder = HelloRequest.newBuilder();
+                    KLog.i("onWorkerThread message=" + params[0]);
+                    builder.setName(params[0]);
+                    builder.setAge("100");
+                    builder.setZouhaiping("200");
+                    HelloRequest request = builder.build();
+                    reply = stub.sayHello(request);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return reply;
+            }
+        };
     }
 }

@@ -30,6 +30,8 @@ service Greeter {
 // The request message containing the user's name.
 message HelloRequest {
   string name = 1;
+  string age = 100;
+  string zouhaiping = 200;
 }
 
 // The response message containing the greetings
