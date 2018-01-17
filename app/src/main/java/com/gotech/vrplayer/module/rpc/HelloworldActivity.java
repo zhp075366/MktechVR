@@ -69,8 +69,8 @@ public class HelloworldActivity extends AppCompatActivity {
             try {
                 mChannel = ManagedChannelBuilder.forAddress(mHost, mPort).usePlaintext(true).build();
                 GreeterGrpc.GreeterBlockingStub stub = GreeterGrpc.newBlockingStub(mChannel);
-                HelloRequest message = HelloRequest.newBuilder().setName(mMessage).build();
-                HelloReply reply = stub.sayHello(message);
+                HelloRequest request = HelloRequest.newBuilder().setName(mMessage).build();
+                HelloReply reply = stub.sayHello(request);
                 return reply.getMessage();
             } catch (Exception e) {
                 StringWriter sw = new StringWriter();

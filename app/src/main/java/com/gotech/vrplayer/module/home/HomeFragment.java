@@ -120,8 +120,8 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
             }
         });
         mAdapter.setNewData(data);
-        mPresenter.addTask();
-        mAppUpdateManager.checkUpdate(true);
+        //mPresenter.addTask();
+        //mAppUpdateManager.checkUpdate(true);
     }
 
     @Override
