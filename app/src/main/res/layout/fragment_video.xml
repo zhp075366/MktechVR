@@ -7,7 +7,7 @@
     android:background="@color/white"
     android:orientation="vertical">
 
-    <com.gotech.vrplayer.widget.colortrackview.ColorTrackTabLayout
+    <com.mktech.smarthome.widget.colortrackview.ColorTrackTabLayout
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="35dp"

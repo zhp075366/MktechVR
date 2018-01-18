@@ -59,7 +59,7 @@
 
         </RelativeLayout>
 
-        <com.gotech.vrplayer.widget.NumberProgressBar
+        <com.mktech.smarthome.widget.NumberProgressBar
             android:id="@+id/nbProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

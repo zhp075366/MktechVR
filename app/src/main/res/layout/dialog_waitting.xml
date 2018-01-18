@@ -14,7 +14,7 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <com.gotech.vrplayer.widget.ProgressWheel
+        <com.mktech.smarthome.widget.ProgressWheel
             android:id="@+id/progressBar"
             android:layout_width="60dp"
             android:layout_height="60dp"

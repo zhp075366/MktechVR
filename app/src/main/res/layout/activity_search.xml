@@ -4,12 +4,12 @@
               android:layout_height="match_parent"
               android:orientation="vertical">
 
-    <com.gotech.vrplayer.widget.VrActionBar
+    <com.mktech.smarthome.widget.VrActionBar
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <com.gotech.vrplayer.widget.ResearchView
+    <com.mktech.smarthome.widget.ResearchView
         android:id="@+id/rv_research_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
