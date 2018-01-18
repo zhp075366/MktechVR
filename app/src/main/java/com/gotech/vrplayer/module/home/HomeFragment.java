@@ -18,8 +18,7 @@ import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.model.bean.HomeCategoryBean;
 import com.gotech.vrplayer.model.bean.HomeMultipleItemBean;
 import com.gotech.vrplayer.module.personal.update.AppUpdateManager;
-import com.gotech.vrplayer.module.rpc.HelloworldActivity;
-import com.gotech.vrplayer.module.video.detail.VideoDetailActivity;
+import com.gotech.vrplayer.module.rpc.HelloWorldActivity;
 import com.gotech.vrplayer.utils.DensityUtil;
 import com.jude.rollviewpager.OnItemClickListener;
 import com.jude.rollviewpager.RollPagerView;
@@ -148,7 +147,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
                 // 此position不包括header和footer,和data list保持一致
                 KLog.i("onItemClick position=" + position);
                 if (data.get(position).getPicture() != null) {
-                    startActivity(new Intent(mContext, HelloworldActivity.class));
+                    startActivity(new Intent(mContext, HelloWorldActivity.class));
                 }
             }
         });

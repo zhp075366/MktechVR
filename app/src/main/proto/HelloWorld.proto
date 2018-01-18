@@ -13,10 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 syntax = "proto3";
-
-//option java_package = "com.gotech.vrplayer";
-option java_outer_classname = "HelloWorldProto";
-
 package helloworld;
 
 // The greeting service definition.

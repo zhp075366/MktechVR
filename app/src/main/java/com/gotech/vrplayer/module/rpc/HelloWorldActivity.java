@@ -15,17 +15,17 @@ import com.gotech.vrplayer.utils.GRPCTaskWrapper;
 import com.socks.library.KLog;
 
 import helloworld.HelloWorldGrpc;
-import helloworld.HelloWorldProto;
+import helloworld.HelloWorldOuterClass;
 import io.grpc.ManagedChannel;
 
-public class HelloworldActivity extends AppCompatActivity {
+public class HelloWorldActivity extends AppCompatActivity {
     private Button mSendButton;
     private EditText mHostEdit;
     private EditText mPortEdit;
     private EditText mMessageEdit;
     private TextView mResultText;
     private GRPCTaskWrapper.OnLoadListener mGRPCListener;
-    private GRPCTaskWrapper<String, Void, HelloWorldProto.HelloReply> mTask;
+    private GRPCTaskWrapper<String, Void, HelloWorldOuterClass.HelloReply> mTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,7 @@ public class HelloworldActivity extends AppCompatActivity {
     }
 
     private void initGRPCListener() {
-        mGRPCListener = new GRPCTaskWrapper.OnLoadListener<String, Void, HelloWorldProto.HelloReply>() {
+        mGRPCListener = new GRPCTaskWrapper.OnLoadListener<String, Void, HelloWorldOuterClass.HelloReply>() {
             @Override
             public void onStart(Object taskTag) {
                 KLog.i("onStart");
@@ -63,7 +63,7 @@ public class HelloworldActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onResult(Object taskTag, HelloWorldProto.HelloReply helloReply) {
+            public void onResult(Object taskTag, HelloWorldOuterClass.HelloReply helloReply) {
                 KLog.i("onResult");
                 if (helloReply != null) {
                     mResultText.setText(helloReply.getMessage());
@@ -72,16 +72,16 @@ public class HelloworldActivity extends AppCompatActivity {
             }
 
             @Override
-            public HelloWorldProto.HelloReply onWorkerThread(Object taskTag, ManagedChannel channel, String... params) {
-                HelloWorldProto.HelloReply reply = null;
+            public HelloWorldOuterClass.HelloReply onWorkerThread(Object taskTag, ManagedChannel channel, String... params) {
+                HelloWorldOuterClass.HelloReply reply = null;
                 try {
                     HelloWorldGrpc.HelloWorldBlockingStub stub = HelloWorldGrpc.newBlockingStub(channel);
-                    HelloWorldProto.HelloRequest.Builder builder = HelloWorldProto.HelloRequest.newBuilder();
+                    HelloWorldOuterClass.HelloRequest.Builder builder = HelloWorldOuterClass.HelloRequest.newBuilder();
                     KLog.i("onWorkerThread message=" + params[0]);
                     builder.setName(params[0]);
                     builder.setAge("100");
                     builder.setZouhaiping("200");
-                    HelloWorldProto.HelloRequest request = builder.build();
+                    HelloWorldOuterClass.HelloRequest request = builder.build();
                     reply = stub.sayHello(request);
                 } catch (Exception e) {
                     e.printStackTrace();
