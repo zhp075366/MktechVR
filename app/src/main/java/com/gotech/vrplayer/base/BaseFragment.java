@@ -18,14 +18,17 @@ import butterknife.Unbinder;
 public abstract class BaseFragment<P> extends Fragment {
 
     protected P mPresenter;
+    protected View mRootView;
+    protected BaseActivity mActivity;
     private Unbinder mUnbinder;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(getRootLayoutId(), container, false);
-        mUnbinder = ButterKnife.bind(this, view);
-        return view;
+        mRootView = inflater.inflate(getRootLayoutId(), container, false);
+        mActivity = (BaseActivity)getActivity();
+        mUnbinder = ButterKnife.bind(this, mRootView);
+        return mRootView;
     }
 
     @Override

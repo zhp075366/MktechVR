@@ -1,6 +1,6 @@
 package com.gotech.vrplayer.module.personal;
 
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.base.BaseFragment;
 import com.gotech.vrplayer.module.personal.update.AppUpdateManager;
+import com.gotech.vrplayer.module.rpc.HelloWorldActivity;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -27,12 +28,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     TextView mTvAppVersion;
     @BindView(R.id.check_update)
     RelativeLayout mCheckUpdate;
-    @BindView(R.id.help)
-    RelativeLayout mHelp;
-    @BindView(R.id.feedback_advice)
-    RelativeLayout mFeedbackAdvice;
 
-    private Context mContext;
     // App更新管理器
     private AppUpdateManager mAppUpdateManager;
 
@@ -58,7 +54,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mAppUpdateManager = new AppUpdateManager();
-        mAppUpdateManager.init(mContext);
+        mAppUpdateManager.init(mActivity);
         showVersionName();
     }
 
@@ -75,8 +71,7 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
 
     @Override
     protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new PersonalPresenter(mContext, this);
+        mPresenter = new PersonalPresenter(mActivity, this);
     }
 
     @OnClick(R.id.check_update)
@@ -87,5 +82,15 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     private void showVersionName() {
         String appVersion = mPresenter.getVersionName();
         mTvAppVersion.setText(appVersion);
+    }
+
+    @OnClick(R.id.grpc_test)
+    public void grpcTest() {
+        startActivity(new Intent(mActivity, HelloWorldActivity.class));
+    }
+
+    @OnClick(R.id.huawei_message_test)
+    public void messageTest() {
+
     }
 }
