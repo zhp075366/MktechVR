@@ -74,14 +74,14 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
         mPresenter = new PersonalPresenter(mActivity, this);
     }
 
-    @OnClick(R.id.check_update)
-    public void checkUpdate() {
-        mAppUpdateManager.checkUpdate(false);
-    }
-
     private void showVersionName() {
         String appVersion = mPresenter.getVersionName();
         mTvAppVersion.setText(appVersion);
+    }
+
+    @OnClick(R.id.check_update)
+    public void checkUpdate() {
+        mAppUpdateManager.checkUpdate(false);
     }
 
     @OnClick(R.id.grpc_test)
