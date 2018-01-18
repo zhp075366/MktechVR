@@ -1,0 +1,44 @@
+syntax = "proto3";
+package UserDnsQuery; // namespace
+option java_outer_classname = "UserDnsQueryProto";
+
+// 每个proto必须包含下面行，相关的id和name统一进行分配即可.
+//;Id uint64 = 7002
+//;Name string = "UserDnsQuery"
+// 请求方填写
+
+message HostInfo {
+	string ipaddr = 1;
+	repeated int32  port = 2; // 可能在一个服务上运行多个端口
+}
+
+message DnsInfo {
+	string host = 1;
+	repeated HostInfo hosts = 2;
+}
+
+message RpcRequest {
+	// true;平台申请
+	string 	client_id = 1; 
+	// true;单位秒,请求时间戳，在该时间开始的15分钟内该请求有效，放置数据重放攻击.
+	int64	req_time = 2; 
+	// true;签名字串,计算方法： md5(req_time + client_srcret)
+	string sign_key = 3; 
+
+	string client_ipaddr = 10; // 客户端的外网IP地址(可以为空,由apigw获取后填写)
+	int64 req_timestamp = 11; // 请求时设备端的时间戳，单位MS
+	repeated string host = 12; // 需要查询的主机名
+}
+// 返回方填写
+message RpcResponse {
+	int64 req_timestamp = 11; // 将请求的时间戳返回
+	int64 srv_timestamp = 12; // 服务器的时间戳(ms)，客户端时间等于: (当前接收到命令的时间-req_timesstamp)/2 + srv_timestamp
+	repeated DnsInfo ans_hosts = 13;
+	repeated HostInfo api_gateway = 14; // 可用的api_gateway地址
+}
+
+// Service
+service UserDnsQuery {
+	//rpc Add (stream RpcRequest) returns (stream RpcResponse) {}
+	rpc YCall (RpcRequest) returns (RpcResponse) {}
+}

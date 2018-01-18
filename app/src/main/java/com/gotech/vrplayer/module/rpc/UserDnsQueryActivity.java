@@ -18,7 +18,7 @@ import HelloWorld.HelloWorldGrpc;
 import HelloWorld.HelloWorldProto;
 import io.grpc.ManagedChannel;
 
-public class HelloWorldActivity extends AppCompatActivity {
+public class UserDnsQueryActivity extends AppCompatActivity {
     private Button mSendButton;
     private EditText mHostEdit;
     private EditText mPortEdit;
