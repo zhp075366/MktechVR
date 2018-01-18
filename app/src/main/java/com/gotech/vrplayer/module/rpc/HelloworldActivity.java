@@ -10,12 +10,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.gotech.vrplayer.HelloWorldGrpc;
-import com.gotech.vrplayer.HelloWorldProto;
 import com.gotech.vrplayer.R;
 import com.gotech.vrplayer.utils.GRPCTaskWrapper;
 import com.socks.library.KLog;
 
+import helloworld.HelloWorldGrpc;
+import helloworld.HelloWorldProto;
 import io.grpc.ManagedChannel;
 
 public class HelloworldActivity extends AppCompatActivity {
