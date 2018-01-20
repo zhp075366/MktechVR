@@ -1,8 +1,7 @@
-package com.mktech.smarthome.model.impl;
+package com.mktech.smarthome.model;
 
-import com.mktech.smarthome.model.bean.HomePictureBean;
 import com.mktech.smarthome.event.LoadingDataEvent;
-import com.mktech.smarthome.model.IVideoChannelModel;
+import com.mktech.smarthome.model.bean.HomePictureBean;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -14,17 +13,15 @@ import java.util.List;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoChannelModelImpl implements IVideoChannelModel {
+public class VideoChannelModel {
 
-    @Override
     public void loadMore(final int page, final String channelCode) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(2000);
-                }
-                catch(InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 List<HomePictureBean> data = getData(page);
@@ -37,15 +34,13 @@ public class VideoChannelModelImpl implements IVideoChannelModel {
         }).start();
     }
 
-    @Override
     public void getFirstLoadData(final String channelCode) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(2000);
-                }
-                catch(InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 List<HomePictureBean> data = getData(0);
@@ -61,7 +56,7 @@ public class VideoChannelModelImpl implements IVideoChannelModel {
     // 视频页，视频详情页，EasyRecyclerView预加载数据
     private List<HomePictureBean> getData(int page) {
         List<HomePictureBean> arr = new ArrayList<>();
-        if(page >= 5) {
+        if (page >= 5) {
             return null;
         }
         arr.add(new HomePictureBean("http://i2.hdslb.com/52_52/user/61175/6117592/myface.jpg", "月の星く雪" + "————————第" + page + "页", "完结来补"));

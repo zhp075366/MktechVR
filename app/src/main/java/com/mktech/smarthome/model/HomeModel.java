@@ -1,8 +1,7 @@
-package com.mktech.smarthome.model.impl;
+package com.mktech.smarthome.model;
 
 import com.mktech.smarthome.R;
 import com.mktech.smarthome.event.HomeMessageEvent;
-import com.mktech.smarthome.model.IHomeModel;
 import com.mktech.smarthome.model.bean.HomeAdBean;
 import com.mktech.smarthome.model.bean.HomeCategoryBean;
 import com.mktech.smarthome.model.bean.HomeMultipleItemBean;
@@ -18,7 +17,7 @@ import java.util.List;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class HomeModelImpl implements IHomeModel {
+public class HomeModel {
 
     // 主页Picture数据
     private List<HomePictureBean> getPictureData() {
@@ -72,7 +71,6 @@ public class HomeModelImpl implements IHomeModel {
     }
 
     // 所有的推荐数据，包括recommendTitle，picture，wide picture
-    @Override
     public void getFirstLoadData() {
         // 模拟后台获取数据任务
         new Thread(new Runnable() {
@@ -80,8 +78,7 @@ public class HomeModelImpl implements IHomeModel {
             public void run() {
                 try {
                     Thread.sleep(1500);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 List<HomeMultipleItemBean> arrAll = getTestData();
@@ -93,7 +90,6 @@ public class HomeModelImpl implements IHomeModel {
     }
 
     // 主页中间部分的分类
-    @Override
     public List<HomeCategoryBean> getCategoryData() {
         List<HomeCategoryBean> categoryData = new ArrayList<>();
         String[] typeName = new String[]{"排行榜首", "创意广告", "经典动画", "优质短片", "极限运动"};
@@ -108,7 +104,6 @@ public class HomeModelImpl implements IHomeModel {
     }
 
     // 主页ViewPager的数据
-    @Override
     public List<HomeAdBean> getViewPagerData() {
         ArrayList<HomeAdBean> arr = new ArrayList<>();
         arr.add(new HomeAdBean("http://i2.hdslb.com/u_user/e97a1632329cac1fa6ab3362e7233a08.jpg", "http://www" + ".bilibili.com/topic/v2/1004.html"));
@@ -119,7 +114,6 @@ public class HomeModelImpl implements IHomeModel {
     }
 
     // 主页换一换的替换数据
-    @Override
     public List<HomeMultipleItemBean> getReplaceRecommendData() {
         List<HomePictureBean> arr = new ArrayList<>();
         List<HomeMultipleItemBean> resList = new ArrayList<>();

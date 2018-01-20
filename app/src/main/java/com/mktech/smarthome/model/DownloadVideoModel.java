@@ -1,9 +1,8 @@
-package com.mktech.smarthome.model.impl;
+package com.mktech.smarthome.model;
 
-import com.mktech.smarthome.model.IDownloadVideoModel;
-import com.mktech.smarthome.model.bean.DownloadVideoBean;
 import com.lzy.okgo.db.DownloadManager;
 import com.lzy.okgo.model.Progress;
+import com.mktech.smarthome.model.bean.DownloadVideoBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,29 +12,26 @@ import java.util.List;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc: 只负债数据相关的操作，包括本地数据和数据库中数据
  */
-public class DownloadVideoModelImpl implements IDownloadVideoModel {
+public class DownloadVideoModel {
 
     private DownloadManager mDownloadManager;
 
-    public DownloadVideoModelImpl() {
+    public DownloadVideoModel() {
         //数据库的操作类，主要是对Progress下载信息的 增，删，改，查
         mDownloadManager = DownloadManager.getInstance();
     }
 
     // 提供需要下载的数据
-    @Override
     public List<DownloadVideoBean> getNeedDownloadTasks() {
         return initData();
     }
 
     // 提供数据库中下载完成的数据
-    @Override
     public List<Progress> getFinishedProgress() {
         return mDownloadManager.getFinished();
     }
 
     // 提供数据库中正在下载的数据
-    @Override
     public List<Progress> getDownloadingProgress() {
         return mDownloadManager.getDownloading();
     }

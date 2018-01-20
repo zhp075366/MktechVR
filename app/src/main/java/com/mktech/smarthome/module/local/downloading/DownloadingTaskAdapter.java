@@ -37,10 +37,13 @@ public class DownloadingTaskAdapter extends RecyclerView.Adapter<DownloadingTask
     private LayoutInflater mInflater;
     private DownloadingTaskPresenter mPresenter;
 
-    public DownloadingTaskAdapter(Context context, DownloadingTaskPresenter presenter) {
+    public DownloadingTaskAdapter(Context context) {
         mContext = context;
-        mPresenter = presenter;
         mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    public void setPresenter(DownloadingTaskPresenter presenter) {
+        mPresenter = presenter;
     }
 
     private void updateData() {

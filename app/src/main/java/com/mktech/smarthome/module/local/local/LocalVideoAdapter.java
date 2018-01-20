@@ -21,8 +21,11 @@ public class LocalVideoAdapter extends BaseQuickAdapter<LocalVideoBean, BaseView
     private Bitmap[] mThumbnailBitmaps;
     private LocalVideoPresenter mPresenter;
 
-    public LocalVideoAdapter(LocalVideoPresenter presenter) {
+    public LocalVideoAdapter() {
         super(R.layout.adapter_local_video_item);
+    }
+
+    public void setPresenter(LocalVideoPresenter presenter) {
         mPresenter = presenter;
     }
 

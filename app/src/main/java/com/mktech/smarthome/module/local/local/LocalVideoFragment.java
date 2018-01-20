@@ -1,15 +1,11 @@
 package com.mktech.smarthome.module.local.local;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -73,6 +69,7 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     @Override
     protected void initPresenterData() {
         mPresenter = new LocalVideoPresenter(mActivity, this);
+        mAdapter.setPresenter(mPresenter);
         lazyLoad();
     }
 
@@ -137,7 +134,7 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
         SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(mActivity);
-        mAdapter = new LocalVideoAdapter(mPresenter);
+        mAdapter = new LocalVideoAdapter();
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(itemDecoration);

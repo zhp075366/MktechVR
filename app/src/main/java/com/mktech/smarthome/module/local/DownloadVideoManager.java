@@ -1,8 +1,7 @@
 package com.mktech.smarthome.module.local;
 
-import com.mktech.smarthome.model.IDownloadVideoModel;
 import com.mktech.smarthome.model.bean.DownloadVideoBean;
-import com.mktech.smarthome.model.impl.DownloadVideoModelImpl;
+import com.mktech.smarthome.model.DownloadVideoModel;
 import com.mktech.smarthome.module.video.detail.AddTaskResult;
 import com.mktech.smarthome.utils.SDCardUtil;
 import com.mktech.smarthome.utils.ToastUtil;
@@ -25,7 +24,7 @@ import java.util.Map;
 public class DownloadVideoManager {
 
     private OkDownload mOkDownload;
-    private IDownloadVideoModel mModel;
+    private DownloadVideoModel mModel;
     private List<DownloadVideoBean> mNeedDownList;
 
     // 静态内部类单例模式
@@ -39,7 +38,7 @@ public class DownloadVideoManager {
 
     private DownloadVideoManager() {
         initOkDownload();
-        mModel = new DownloadVideoModelImpl();
+        mModel = new DownloadVideoModel();
         mNeedDownList = mModel.getNeedDownloadTasks();
     }
 

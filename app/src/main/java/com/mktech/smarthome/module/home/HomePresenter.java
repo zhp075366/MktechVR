@@ -3,11 +3,10 @@ package com.mktech.smarthome.module.home;
 import android.content.Context;
 
 import com.mktech.smarthome.event.HomeMessageEvent;
-import com.mktech.smarthome.model.IHomeModel;
 import com.mktech.smarthome.model.bean.HomeAdBean;
 import com.mktech.smarthome.model.bean.HomeCategoryBean;
 import com.mktech.smarthome.model.bean.HomeMultipleItemBean;
-import com.mktech.smarthome.model.impl.HomeModelImpl;
+import com.mktech.smarthome.model.HomeModel;
 import com.mktech.smarthome.module.local.DownloadVideoManager;
 import com.mktech.smarthome.module.video.detail.AddTaskResult;
 import com.socks.library.KLog;
@@ -26,13 +25,13 @@ import java.util.List;
 public class HomePresenter {
 
     private Context mContext;
-    private IHomeModel mModel;
+    private HomeModel mModel;
     private IHomeView mView;
 
     public HomePresenter(Context context, IHomeView view) {
         mView = view;
         mContext = context;
-        mModel = new HomeModelImpl();
+        mModel = new HomeModel();
         EventBus.getDefault().register(this);
     }
 

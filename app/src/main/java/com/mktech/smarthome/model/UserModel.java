@@ -1,8 +1,7 @@
-package com.mktech.smarthome.model.impl;
+package com.mktech.smarthome.model;
 
 import com.mktech.smarthome.SmartHomeApplication;
 import com.mktech.smarthome.greendao.UserBeanDao;
-import com.mktech.smarthome.model.IUserModel;
 import com.mktech.smarthome.model.bean.UserBean;
 
 import org.greenrobot.greendao.query.QueryBuilder;
@@ -14,22 +13,20 @@ import java.util.List;
  * 邮箱：haiping.zou@gotechcn.cn
  * 公司：MKTech
  */
-public class UserModelImpl implements IUserModel {
+public class UserModel {
 
     private UserBeanDao mUserDao;
 
-    public UserModelImpl() {
+    public UserModel() {
         this.mUserDao = SmartHomeApplication.getApplication().getDaoSession().getUserBeanDao();
     }
 
-    @Override
     public void addUser(String name) {
         UserBean mUser = new UserBean();
         mUser.setUsername(name);
         mUserDao.insert(mUser);
     }
 
-    @Override
     public void deleteUser(String name) {
         List<UserBean> listUser = queryUserByName(name);
         for(int i = 0; i < listUser.size(); i++) {
@@ -50,7 +47,6 @@ public class UserModelImpl implements IUserModel {
         //.orderAsc(UserDao.Properties.Id).list();
     }
 
-    @Override
     public void updateUser(String updateId, String updatedName) {
         Long userId = Long.parseLong(updateId);
         UserBean findUser = mUserDao.queryBuilder().where(UserBeanDao.Properties.Id.eq(userId)).build().unique();
@@ -60,12 +56,10 @@ public class UserModelImpl implements IUserModel {
         }
     }
 
-    @Override
     public List<UserBean> loadAllUser() {
         return mUserDao.loadAll();
     }
 
-    @Override
     public void deleteAllUser() {
         mUserDao.deleteAll();
     }

@@ -3,8 +3,7 @@ package com.mktech.smarthome.module.video;
 import android.content.Context;
 
 import com.mktech.smarthome.event.LoadingDataEvent;
-import com.mktech.smarthome.model.IVideoChannelModel;
-import com.mktech.smarthome.model.impl.VideoChannelModelImpl;
+import com.mktech.smarthome.model.VideoChannelModel;
 import com.mktech.smarthome.utils.NetworkUtil;
 
 import org.greenrobot.eventbus.EventBus;
@@ -19,14 +18,14 @@ import org.greenrobot.eventbus.ThreadMode;
 public class VideoChannelPresenter {
 
     private Context mContext;
-    private IVideoChannelModel mModel;
+    private VideoChannelModel mModel;
     private IVideoChannelView mView;
     private String mEventCode;
 
     public VideoChannelPresenter(Context context, IVideoChannelView view) {
         mView = view;
         mContext = context;
-        mModel = new VideoChannelModelImpl();
+        mModel = new VideoChannelModel();
         mEventCode = mView.getChannelCode();
         EventBus.getDefault().register(this);
     }

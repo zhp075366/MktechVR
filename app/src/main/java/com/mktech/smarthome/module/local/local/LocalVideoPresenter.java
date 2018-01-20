@@ -6,9 +6,8 @@ import android.graphics.Bitmap;
 import android.provider.MediaStore;
 
 import com.mktech.smarthome.R;
-import com.mktech.smarthome.model.ILocalVideoModel;
 import com.mktech.smarthome.model.bean.LocalVideoBean;
-import com.mktech.smarthome.model.impl.LocalVideoModelImpl;
+import com.mktech.smarthome.model.LocalVideoModel;
 import com.mktech.smarthome.utils.AsyncTaskWrapper;
 import com.mktech.smarthome.utils.DensityUtil;
 import com.socks.library.KLog;
@@ -25,7 +24,7 @@ public class LocalVideoPresenter {
     private Context mContext;
     private Resources mResources;
     private ILocalVideoView mView;
-    private ILocalVideoModel mModel;
+    private LocalVideoModel mModel;
     private int mWidth, mHeight;
     // 加载视频缩略图任务
     private AsyncTaskWrapper[] mThumbnailTasks;
@@ -38,7 +37,7 @@ public class LocalVideoPresenter {
         mContext = context;
         mResources = mContext.getResources();
         mView = view;
-        mModel = new LocalVideoModelImpl(mContext);
+        mModel = new LocalVideoModel(mContext);
         mWidth = (int)DensityUtil.dp2Px(mContext, mResources.getDimension(R.dimen.local_video_thumbnail_width));
         mHeight = (int)DensityUtil.dp2Px(mContext, mResources.getDimension(R.dimen.local_video_thumbnail_height));
     }

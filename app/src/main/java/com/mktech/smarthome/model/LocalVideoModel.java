@@ -1,4 +1,4 @@
-package com.mktech.smarthome.model.impl;
+package com.mktech.smarthome.model;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
 
-import com.mktech.smarthome.model.ILocalVideoModel;
 import com.mktech.smarthome.model.bean.LocalVideoBean;
 
 import java.util.ArrayList;
@@ -17,15 +16,14 @@ import java.util.List;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class LocalVideoModelImpl implements ILocalVideoModel {
+public class LocalVideoModel {
 
     private Context mContext;
 
-    public LocalVideoModelImpl(Context context) {
+    public LocalVideoModel(Context context) {
         mContext = context;
     }
 
-    @Override
     public List<LocalVideoBean> getLocalVideoData() {
         List<LocalVideoBean> videoList = new ArrayList<>();
         String[] mediaColumns = {
@@ -57,7 +55,6 @@ public class LocalVideoModelImpl implements ILocalVideoModel {
         return videoList;
     }
 
-    @Override
     public Bitmap getVideoThumbnail(String videoPath, int width, int height, int kind) {
         Bitmap bitmap;
         bitmap = ThumbnailUtils.createVideoThumbnail(videoPath, kind);

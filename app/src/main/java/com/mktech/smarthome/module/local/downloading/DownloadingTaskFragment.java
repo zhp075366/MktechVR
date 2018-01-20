@@ -81,6 +81,7 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
     @Override
     protected void initPresenterData() {
         mPresenter = new DownloadingTaskPresenter(mActivity, this);
+        mAdapter.setPresenter(mPresenter);
     }
 
     @Override
@@ -123,7 +124,7 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
         CommonLineDivider itemDecoration = new CommonLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(mActivity);
-        mAdapter = new DownloadingTaskAdapter(mActivity, mPresenter);
+        mAdapter = new DownloadingTaskAdapter(mActivity);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(itemDecoration);

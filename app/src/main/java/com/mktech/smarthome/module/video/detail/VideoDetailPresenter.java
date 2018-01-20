@@ -3,8 +3,7 @@ package com.mktech.smarthome.module.video.detail;
 import android.content.Context;
 
 import com.mktech.smarthome.event.LoadingDataEvent;
-import com.mktech.smarthome.model.IVideoDetailModel;
-import com.mktech.smarthome.model.impl.VideoDetailModelImpl;
+import com.mktech.smarthome.model.VideoDetailModel;
 import com.mktech.smarthome.module.local.DownloadVideoManager;
 import com.mktech.smarthome.utils.NetworkUtil;
 
@@ -21,14 +20,14 @@ public class VideoDetailPresenter {
 
     private String mEventCode;
     private Context mContext;
-    private IVideoDetailModel mModel;
+    private VideoDetailModel mModel;
     private IVideoDetailView mView;
     private DownloadVideoManager mDownloadVideoManager;
 
     public VideoDetailPresenter(Context context, IVideoDetailView view) {
         mView = view;
         mContext = context;
-        mModel = new VideoDetailModelImpl();
+        mModel = new VideoDetailModel();
         mDownloadVideoManager = DownloadVideoManager.getInstance();
         mEventCode = LoadingDataEvent.VIDEO_DETAIL_EVENT_CODE;
         EventBus.getDefault().register(this);
