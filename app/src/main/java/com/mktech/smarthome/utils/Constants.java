@@ -21,4 +21,8 @@ public class Constants {
     public static final String BREAKPOINT_EXPIRED = "breakpoint file has expired!";
     public static final String UNEXPECTED_END = "unexpected end of stream";
 
+    // for app restart
+    public static final String NAME_APP_KILL = "name_app_kill";
+    public static final String KEY_APP_KELL = "key_app_kill";
+
 }

@@ -8,8 +8,11 @@ import com.mktech.smarthome.greendao.AppMRHOpenHelper;
 import com.mktech.smarthome.greendao.DaoMaster;
 import com.mktech.smarthome.greendao.DaoSession;
 import com.mktech.smarthome.utils.MigrationHelper;
+import com.mktech.smarthome.utils.SDKUtil;
 import com.socks.library.KLog;
 import com.squareup.leakcanary.LeakCanary;
+
+import java.io.IOException;
 
 /**
  * 作者：Zou Haiping on 2016/10/9 10:50
@@ -20,16 +23,19 @@ public class SmartHomeApplication extends Application {
 
     private DaoSession mDaoSession;
     private static SmartHomeApplication mApp;
-    private static final String GLOBAL_TAG = "iot";
+    // 默认为进程关闭的状态，在启动页会设置为正常态1
+    public static int APP_STATE = -1;
+    private static final String GLOBAL_TAG = "SmartHome";
 
     @Override
     public void onCreate() {
         super.onCreate();
         mApp = this;
-        initDataBase();
-        initLeakCanary();
         KLog.init(true, GLOBAL_TAG);
         OkGo.getInstance().init(this);
+        initTestFile();
+        initDataBase();
+        initLeakCanary();
     }
 
     public static SmartHomeApplication getApplication() {
@@ -38,11 +44,20 @@ public class SmartHomeApplication extends Application {
 
     private void initLeakCanary() {
         if (LeakCanary.isInAnalyzerProcess(this)) {
-            // This process is dedicated to LeakCanary for heap analysis.
-            // You should not init your app in this process.
             return;
         }
         LeakCanary.install(this);
+    }
+
+    private void initTestFile() {
+        KLog.i("initTestFile");
+        try {
+            SDKUtil.copyFile(this, "test1.h264");
+        } catch (IOException e) {
+            KLog.e("SdkUtils.init error msg=" + e.getMessage());
+            e.printStackTrace();
+        }
+        KLog.i("initTestFile end");
     }
 
     /**

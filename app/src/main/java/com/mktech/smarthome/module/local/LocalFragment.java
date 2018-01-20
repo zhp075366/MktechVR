@@ -43,34 +43,18 @@ public class LocalFragment extends BaseFragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        initTabLayout();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
-
-    @Override
     protected int getRootLayoutId() {
         return R.layout.fragment_local;
     }
 
     @Override
-    protected void createPresenter() {
+    protected void initPresenterData() {
 
+    }
+
+    @Override
+    protected void initView() {
+        initTabLayout();
     }
 
     private void initTabLayout() {

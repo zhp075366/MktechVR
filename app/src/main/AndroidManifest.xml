@@ -15,23 +15,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.mktech.smarthome.module.main.MainActivity"
-            android:screenOrientation="portrait">
+            android:name="com.mktech.smarthome.module.splash.SplashActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>
-
-        <activity
-            android:name="com.mktech.smarthome.module.video.detail.VideoDetailActivity"
-            android:screenOrientation="portrait">
-        </activity>
-
-        <activity
-            android:name="com.mktech.smarthome.module.rpc.HelloWorldActivity"
-            android:screenOrientation="portrait">
         </activity>
 
         <activity
@@ -41,8 +32,20 @@
             android:theme="@style/FullscreenTheme">
         </activity>
 
-        <service android:name="com.mktech.smarthome.module.personal.update.AppUpdateService">
-        </service>
+        <activity
+            android:name="com.mktech.smarthome.module.video.detail.VideoDetailActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.mktech.smarthome.module.rpc.GRPCTestActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.mktech.smarthome.module.main.MainActivity"
+            android:screenOrientation="portrait">
+        </activity>
 
     </application>
 

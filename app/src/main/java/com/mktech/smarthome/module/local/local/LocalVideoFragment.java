@@ -36,7 +36,6 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     @BindView(R.id.loading_progress)
     ProgressBar mLoadingProgress;
 
-    private Context mContext;
     private LocalVideoAdapter mAdapter;
 
     // 当前fragment view是否已经初始化
@@ -55,22 +54,9 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected void initView() {
         initRecyclerView();
         mIsInit = true;
-        lazyLoad();
     }
 
     @Override
@@ -85,9 +71,9 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
     }
 
     @Override
-    protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new LocalVideoPresenter(mContext, this);
+    protected void initPresenterData() {
+        mPresenter = new LocalVideoPresenter(mActivity, this);
+        lazyLoad();
     }
 
     @Override
@@ -139,18 +125,18 @@ public class LocalVideoFragment extends BaseFragment<LocalVideoPresenter> implem
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 // 此position不包括header和footer,和data list保持一致
                 KLog.i("onItemClick position=" + position + " " + data.get(position).getPath());
-                //VrPlayerActivity.startVrPlayerActivity(mContext, data.get(position).getPath());
+                //VrPlayerActivity.startVrPlayerActivity(mActivity, data.get(position).getPath());
             }
         });
     }
 
     private void initRecyclerView() {
-        int height = (int)DensityUtil.dp2Px(mContext, 0.8f);
-        int padding = (int)DensityUtil.dp2Px(mContext, 5f);
+        int height = (int)DensityUtil.dp2Px(mActivity, 0.8f);
+        int padding = (int)DensityUtil.dp2Px(mActivity, 5f);
         // 分割线颜色 & 高度 & 左边距 & 右边距
         SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(false);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mActivity);
         mAdapter = new LocalVideoAdapter(mPresenter);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);

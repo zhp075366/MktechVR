@@ -3,8 +3,6 @@ package com.mktech.smarthome.module.video.detail;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -31,8 +29,7 @@ import butterknife.BindView;
  * E-Mail: haiping.zou@gotechcn.cn
  * Desc:
  */
-public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter>
-        implements IVideoDetailView, BaseQuickAdapter.RequestLoadMoreListener {
+public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter> implements IVideoDetailView, BaseQuickAdapter.RequestLoadMoreListener {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -42,14 +39,6 @@ public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter>
     private int nPage = 0;
     private Context mContext;
     private VideoDetailAdapter mAdapter;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mContext = this;
-        initRecyclerView();
-        mPresenter.getFirstLoadData();
-    }
 
     @Override
     protected void onDestroy() {
@@ -63,8 +52,15 @@ public class VideoDetailActivity extends BaseActivity<VideoDetailPresenter>
     }
 
     @Override
-    protected void createPresenter() {
+    protected void initView() {
+        mContext = this;
+        initRecyclerView();
+    }
+
+    @Override
+    protected void initPresenterData() {
         mPresenter = new VideoDetailPresenter(this, this);
+        mPresenter.getFirstLoadData();
     }
 
     @Override

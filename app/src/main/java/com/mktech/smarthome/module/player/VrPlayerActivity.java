@@ -34,7 +34,12 @@ public class VrPlayerActivity extends BaseActivity {
     }
 
     @Override
-    protected void createPresenter() {
+    protected void initView() {
+
+    }
+
+    @Override
+    protected void initPresenterData() {
 
     }
 

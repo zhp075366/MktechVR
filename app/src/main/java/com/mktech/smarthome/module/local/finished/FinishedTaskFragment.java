@@ -1,21 +1,17 @@
 package com.mktech.smarthome.module.local.finished;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.lzy.okgo.model.Progress;
 import com.mktech.smarthome.R;
 import com.mktech.smarthome.base.BaseFragment;
 import com.mktech.smarthome.utils.DensityUtil;
 import com.mktech.smarthome.widget.SpecialLineDivider;
-import com.lzy.okgo.model.Progress;
 
 import java.util.List;
 
@@ -33,7 +29,6 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     @BindView(R.id.loading_progress)
     ProgressBar mLoadingProgress;
 
-    private Context mContext;
     private FinishedTaskAdapter mAdapter;
 
     // 当前fragment view是否已经初始化
@@ -50,27 +45,10 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected void initView() {
         initRecyclerView();
         mIsInit = true;
         lazyLoad();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
     }
 
     @Override
@@ -89,9 +67,8 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     }
 
     @Override
-    protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new FinishedTaskPresenter(mContext, this);
+    protected void initPresenterData() {
+        mPresenter = new FinishedTaskPresenter(mActivity, this);
     }
 
     @Override
@@ -121,12 +98,12 @@ public class FinishedTaskFragment extends BaseFragment<FinishedTaskPresenter> im
     }
 
     private void initRecyclerView() {
-        int height = (int)DensityUtil.dp2Px(mContext, 0.8f);
-        int padding = (int)DensityUtil.dp2Px(mContext, 5f);
+        int height = (int)DensityUtil.dp2Px(mActivity, 0.8f);
+        int padding = (int)DensityUtil.dp2Px(mActivity, 5f);
         // 分割线颜色 & 高度 & 左边距 & 右边距
         SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(false);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mActivity);
         mAdapter = new FinishedTaskAdapter();
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);

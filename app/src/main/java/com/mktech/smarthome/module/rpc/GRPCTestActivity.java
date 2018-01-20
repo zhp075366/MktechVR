@@ -1,8 +1,6 @@
 package com.mktech.smarthome.module.rpc;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -11,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.mktech.smarthome.R;
+import com.mktech.smarthome.base.BaseActivity;
 import com.mktech.smarthome.utils.GRPCTaskWrapper;
 import com.socks.library.KLog;
 
@@ -18,7 +17,8 @@ import HelloWorld.HelloWorldGrpc;
 import HelloWorld.HelloWorldProto;
 import io.grpc.ManagedChannel;
 
-public class UserDnsQueryActivity extends AppCompatActivity {
+public class GRPCTestActivity extends BaseActivity {
+
     private Button mSendButton;
     private EditText mHostEdit;
     private EditText mPortEdit;
@@ -28,10 +28,17 @@ public class UserDnsQueryActivity extends AppCompatActivity {
     private GRPCTaskWrapper<String, Void, HelloWorldProto.HelloReply> mTask;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_helloworld);
+    protected int getRootLayoutId() {
+        return R.layout.activity_helloworld;
+    }
+
+    @Override
+    protected void initPresenterData() {
         initGRPCListener();
+    }
+
+    @Override
+    protected void initView() {
         mSendButton = (Button)findViewById(R.id.send_button);
         mHostEdit = (EditText)findViewById(R.id.host_edit_text);
         mPortEdit = (EditText)findViewById(R.id.port_edit_text);

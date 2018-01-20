@@ -1,10 +1,8 @@
 package com.mktech.smarthome.module.home;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -13,16 +11,15 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.jude.rollviewpager.OnItemClickListener;
+import com.jude.rollviewpager.RollPagerView;
+import com.jude.rollviewpager.hintview.ColorPointHintView;
 import com.mktech.smarthome.R;
 import com.mktech.smarthome.base.BaseFragment;
 import com.mktech.smarthome.model.bean.HomeCategoryBean;
 import com.mktech.smarthome.model.bean.HomeMultipleItemBean;
-import com.mktech.smarthome.module.personal.update.AppUpdateManager;
 import com.mktech.smarthome.module.video.detail.VideoDetailActivity;
 import com.mktech.smarthome.utils.DensityUtil;
-import com.jude.rollviewpager.OnItemClickListener;
-import com.jude.rollviewpager.RollPagerView;
-import com.jude.rollviewpager.hintview.ColorPointHintView;
 import com.socks.library.KLog;
 
 import java.util.List;
@@ -42,11 +39,8 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     ProgressBar mLoadingProgress;
 
     private int mRecommendID;
-    private Context mContext;
     private LayoutInflater mInflater;
     private HomeMultipleItemAdapter mAdapter;
-    // App更新管理器
-    private AppUpdateManager mAppUpdateManager;
 
     public static HomeFragment newInstance(String content) {
         Bundle args = new Bundle();
@@ -57,35 +51,25 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mInflater = inflater;
-        return super.onCreateView(inflater, container, savedInstanceState);
-
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        initRecyclerView();
-        mAppUpdateManager = new AppUpdateManager();
-        mAppUpdateManager.init(mContext);
-        mPresenter.getFirstLoadData();
-    }
-
-    @Override
     protected int getRootLayoutId() {
         return R.layout.fragment_home;
     }
 
     @Override
+    protected void initPresenterData() {
+        mPresenter = new HomePresenter(mActivity, this);
+        mPresenter.getFirstLoadData();
+    }
+
+    @Override
+    protected void initView() {
+        mInflater = mActivity.getLayoutInflater();
+        initRecyclerView();
+    }
+
+    @Override
     public void onDestroyView() {
         mPresenter.destroyPresenter();
-        mAppUpdateManager.destroy();
         super.onDestroyView();
     }
 
@@ -123,16 +107,10 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
         //mAppUpdateManager.checkUpdate(true);
     }
 
-    @Override
-    protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new HomePresenter(mContext, this);
-    }
-
     private void initRecyclerView() {
-        int itemPadding = (int)DensityUtil.dp2Px(mContext, 1);
-        int bottomPadding = (int)DensityUtil.dp2Px(mContext, 1);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(mContext, 2);
+        int itemPadding = (int)DensityUtil.dp2Px(mActivity, 1);
+        int bottomPadding = (int)DensityUtil.dp2Px(mActivity, 1);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(mActivity, 2);
         HomeItemDecoration itemDecoration = new HomeItemDecoration(itemPadding, bottomPadding);
         mAdapter = new HomeMultipleItemAdapter();
         mRecyclerView.addItemDecoration(itemDecoration);
@@ -147,7 +125,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
                 // 此position不包括header和footer,和data list保持一致
                 KLog.i("onItemClick position=" + position);
                 if (data.get(position).getPicture() != null) {
-                    startActivity(new Intent(mContext, VideoDetailActivity.class));
+                    startActivity(new Intent(mActivity, VideoDetailActivity.class));
                 }
             }
         });
@@ -173,12 +151,12 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     }
 
     private void addViewPagerHeader() {
-        final RollPagerView viewPager = new RollPagerView(mContext);
-        viewPager.setHintView(new ColorPointHintView(mContext, Color.YELLOW, Color.GRAY));
-        viewPager.setHintPadding(0, 0, 0, (int)DensityUtil.dp2Px(mContext, 4));
+        final RollPagerView viewPager = new RollPagerView(mActivity);
+        viewPager.setHintView(new ColorPointHintView(mActivity, Color.YELLOW, Color.GRAY));
+        viewPager.setHintPadding(0, 0, 0, (int)DensityUtil.dp2Px(mActivity, 4));
         viewPager.setPlayDelay(2000);
         int width = ViewGroup.LayoutParams.MATCH_PARENT;
-        int height = (int)DensityUtil.dp2Px(mContext, 180);
+        int height = (int)DensityUtil.dp2Px(mActivity, 180);
         HomeViewPagerAdapter adapter = new HomeViewPagerAdapter(viewPager, mPresenter.getViewPagerData());
         viewPager.setAdapter(adapter);
         viewPager.setLayoutParams(new ViewGroup.LayoutParams(width, height));
@@ -192,13 +170,13 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     }
 
     private void addCategoryHeader() {
-        RecyclerView recyclerView = new RecyclerView(mContext);
+        RecyclerView recyclerView = new RecyclerView(mActivity);
         HomeCategoryAdapter adapter = new HomeCategoryAdapter();
         int width = ViewGroup.LayoutParams.MATCH_PARENT;
-        int height = (int)DensityUtil.dp2Px(mContext, 80);
+        int height = (int)DensityUtil.dp2Px(mActivity, 80);
         final List<HomeCategoryBean> categoryData = mPresenter.getCategoryData();
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(mContext, 5);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(mActivity, 5);
 
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
@@ -217,9 +195,9 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements IHomeVi
     }
 
     private void addSpaceHeader() {
-        final View view = new View(mContext);
+        final View view = new View(mActivity);
         int width = ViewGroup.LayoutParams.MATCH_PARENT;
-        int height = (int)DensityUtil.dp2Px(mContext, 8);
+        int height = (int)DensityUtil.dp2Px(mActivity, 8);
         view.setLayoutParams(new ViewGroup.LayoutParams(width, height));
         view.setBackgroundColor(getResources().getColor(R.color.gainsboro));
         mAdapter.addHeaderView(view);

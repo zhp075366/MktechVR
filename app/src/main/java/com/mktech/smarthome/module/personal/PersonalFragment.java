@@ -2,17 +2,12 @@ package com.mktech.smarthome.module.personal;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mktech.smarthome.R;
 import com.mktech.smarthome.base.BaseFragment;
-import com.mktech.smarthome.module.personal.update.AppUpdateManager;
-import com.mktech.smarthome.module.rpc.HelloWorldActivity;
+import com.mktech.smarthome.module.rpc.GRPCTestActivity;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -26,11 +21,6 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
 
     @BindView(R.id.tv_app_version)
     TextView mTvAppVersion;
-    @BindView(R.id.check_update)
-    RelativeLayout mCheckUpdate;
-
-    // App更新管理器
-    private AppUpdateManager mAppUpdateManager;
 
     public static PersonalFragment newInstance(String arg) {
         Bundle args = new Bundle();
@@ -41,27 +31,8 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+    protected void initView() {
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mAppUpdateManager = new AppUpdateManager();
-        mAppUpdateManager.init(mActivity);
-        showVersionName();
-    }
-
-    @Override
-    public void onDestroyView() {
-        mAppUpdateManager.destroy();
-        super.onDestroyView();
     }
 
     @Override
@@ -70,8 +41,9 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
     }
 
     @Override
-    protected void createPresenter() {
+    protected void initPresenterData() {
         mPresenter = new PersonalPresenter(mActivity, this);
+        showVersionName();
     }
 
     private void showVersionName() {
@@ -79,14 +51,9 @@ public class PersonalFragment extends BaseFragment<PersonalPresenter> implements
         mTvAppVersion.setText(appVersion);
     }
 
-    @OnClick(R.id.check_update)
-    public void checkUpdate() {
-        mAppUpdateManager.checkUpdate(false);
-    }
-
     @OnClick(R.id.grpc_test)
     public void grpcTest() {
-        startActivity(new Intent(mActivity, HelloWorldActivity.class));
+        startActivity(new Intent(mActivity, GRPCTestActivity.class));
     }
 
     @OnClick(R.id.huawei_message_test)

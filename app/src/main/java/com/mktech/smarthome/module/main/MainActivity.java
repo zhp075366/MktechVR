@@ -55,14 +55,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
     private static final int REQUEST_PERMISSIONS_CODE = 1000;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        initFragments();
-        initNavigationBar();
-        mVrActionBar.setOnRightButtonClickListner(this);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         requestPermissions();
@@ -75,12 +67,19 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
     }
 
     @Override
+    protected void initView() {
+        initFragments();
+        initNavigationBar();
+        mVrActionBar.setOnRightButtonClickListner(this);
+    }
+
+    @Override
     protected int getRootLayoutId() {
         return R.layout.activity_main;
     }
 
     @Override
-    protected void createPresenter() {
+    protected void initPresenterData() {
         mContext = this;
         mPresenter = new MainPresenter(this, this);
     }
@@ -165,7 +164,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements BottomN
 
     public void requestPermissions() {
         String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        //String[] perms = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_CONTACTS };
         if (!EasyPermissions.hasPermissions(this, perms)) {
             EasyPermissions.requestPermissions(this, getString(R.string.request_permission_tip), REQUEST_PERMISSIONS_CODE, perms);
         }

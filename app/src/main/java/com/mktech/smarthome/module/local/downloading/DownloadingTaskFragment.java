@@ -3,19 +3,16 @@ package com.mktech.smarthome.module.local.downloading;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.lzy.okserver.download.DownloadTask;
 import com.mktech.smarthome.R;
 import com.mktech.smarthome.base.BaseFragment;
 import com.mktech.smarthome.utils.DensityUtil;
 import com.mktech.smarthome.widget.CommonLineDivider;
-import com.lzy.okserver.download.DownloadTask;
 
 import java.util.List;
 
@@ -33,7 +30,6 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
     @BindView(R.id.loading_progress)
     ProgressBar mLoadingProgress;
 
-    private Context mContext;
     private DownloadingTaskAdapter mAdapter;
 
     // 当前fragment view是否已经初始化
@@ -50,27 +46,15 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        initRecyclerView();
-        mIsInit = true;
-    }
-
-    @Override
     public void onDestroyView() {
         mPresenter.destroyPresenter();
         super.onDestroyView();
+    }
+
+    @Override
+    protected void initView() {
+        initRecyclerView();
+        mIsInit = true;
     }
 
     @Override
@@ -95,9 +79,8 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
     }
 
     @Override
-    protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new DownloadingTaskPresenter(mContext, this);
+    protected void initPresenterData() {
+        mPresenter = new DownloadingTaskPresenter(mActivity, this);
     }
 
     @Override
@@ -134,13 +117,13 @@ public class DownloadingTaskFragment extends BaseFragment<DownloadingTaskPresent
     }
 
     private void initRecyclerView() {
-        int height = (int)DensityUtil.dp2Px(mContext, 0.8f);
-        int padding = (int)DensityUtil.dp2Px(mContext, 5f);
+        int height = (int)DensityUtil.dp2Px(mActivity, 0.8f);
+        int padding = (int)DensityUtil.dp2Px(mActivity, 5f);
         // 分割线颜色 & 高度 & 左边距 & 右边距
         CommonLineDivider itemDecoration = new CommonLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(false);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
-        mAdapter = new DownloadingTaskAdapter(mContext, mPresenter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mActivity);
+        mAdapter = new DownloadingTaskAdapter(mActivity, mPresenter);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(itemDecoration);

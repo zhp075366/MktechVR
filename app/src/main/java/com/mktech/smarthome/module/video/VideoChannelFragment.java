@@ -4,12 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -40,7 +37,6 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> im
     ProgressBar mLoadingProgress;
 
     private int nPage = 0;
-    private Context mContext;
     private VideoChannelAdapter mAdapter;
 
     // 当前fragment view是否已经初始化
@@ -61,22 +57,9 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> im
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mChannel = getArguments().getParcelable("ARGS");
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected void initView() {
         initRecyclerView();
         mIsInit = true;
-        lazyLoad();
     }
 
     @Override
@@ -153,9 +136,10 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> im
     }
 
     @Override
-    protected void createPresenter() {
-        mContext = getContext();
-        mPresenter = new VideoChannelPresenter(mContext, this);
+    protected void initPresenterData() {
+        mChannel = getArguments().getParcelable("ARGS");
+        mPresenter = new VideoChannelPresenter(mActivity, this);
+        lazyLoad();
     }
 
     @Override
@@ -170,19 +154,19 @@ public class VideoChannelFragment extends BaseFragment<VideoChannelPresenter> im
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 // 此position不包括header和footer,和data list保持一致
                 KLog.i("onItemClick position=" + position + " " + data.get(position).getMainDescribe());
-                startActivity(new Intent(mContext, VideoDetailActivity.class));
+                startActivity(new Intent(mActivity, VideoDetailActivity.class));
             }
         });
     }
 
     private void initRecyclerView() {
-        int height = (int)DensityUtil.dp2Px(mContext, 0.8f);
-        int padding = (int)DensityUtil.dp2Px(mContext, 10f);
+        int height = (int)DensityUtil.dp2Px(mActivity, 0.8f);
+        int padding = (int)DensityUtil.dp2Px(mActivity, 10f);
         // 分割线颜色 & 高度 & 左边距 & 右边距
         SpecialLineDivider itemDecoration = new SpecialLineDivider(Color.LTGRAY, height, padding, padding);
         itemDecoration.setDrawLastItem(true);
         CommonLoadMoreView loadMoreView = new CommonLoadMoreView();
-        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mActivity);
         mAdapter = new VideoChannelAdapter();
         // 设置预加载
         mAdapter.setPreLoadNumber(8);
